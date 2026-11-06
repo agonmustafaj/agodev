@@ -1,6 +1,11 @@
 const nodemailer = require('nodemailer');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const SITES = {
+  'https://agodev.agonmustafaj.com': 'AgoDev',
+  'https://agonmustafaj.com': 'Portfolio',
+  'https://www.agonmustafaj.com': 'Portfolio'
+};
 
 function field(body, key, max) {
   return String(body[key] == null ? '' : body[key]).trim().slice(0, max);
@@ -12,6 +17,16 @@ function parseBody(body) {
 }
 
 module.exports = async function handler(req, res) {
+  const origin = req.headers.origin || '';
+  const site = SITES[origin] || 'AgoDev';
+  if (SITES[origin]) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+    res.setHeader('Vary', 'Origin');
+  }
+  if (req.method === 'OPTIONS') return res.status(204).end();
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ success: false, message: 'Method not allowed' });
@@ -38,11 +53,11 @@ module.exports = async function handler(req, res) {
 
   try {
     await transporter.sendMail({
-      from: { name: 'AgoDev website', address: user },
+      from: { name: site + ' website', address: user },
       to: process.env.CONTACT_TO || user,
       replyTo: { name, address: email },
-      subject: 'AgoDev: ' + name,
-      text: 'Name: ' + name + '\nEmail: ' + email + '\n\n' + message + '\n\nSent from https://agodev.agonmustafaj.com/'
+      subject: site + ': ' + name,
+      text: 'Name: ' + name + '\nEmail: ' + email + '\n\n' + message + '\n\nSent from ' + (req.headers.referer || origin || 'the website')
     });
     return res.status(200).json({ success: true });
   } catch (err) {
