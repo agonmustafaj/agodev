@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://agodev.agonmustafaj.com/sitemap.xml
