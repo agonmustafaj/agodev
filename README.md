@@ -35,15 +35,13 @@ Official guides used:
 | `PAYSERA_CLIENT_ID` | yes | OAuth client id from the **Test Mode** Checkout project → Integrations |
 | `PAYSERA_CLIENT_SECRET` | yes | OAuth client secret (also the webhook HMAC secret) |
 | `SITE_URL` | recommended | Defaults to `https://agodev.agonmustafaj.com` |
-| `UPSTASH_REDIS_REST_URL` | optional | Extra durable local mirror (Upstash Redis REST) |
-| `UPSTASH_REDIS_REST_TOKEN` | optional | Upstash Redis REST token |
+| `UPSTASH_REDIS_REST_URL` | yes on Vercel | Durable order store (Upstash Redis REST) |
+| `UPSTASH_REDIS_REST_TOKEN` | yes on Vercel | Upstash Redis REST token |
 | `PAYSERA_DASHBOARD_TOKEN` | optional | If set, `/api/paysera/orders` requires `Authorization: Bearer …` or `?token=` |
 
 **Not used (legacy WebToPay):** `projectid`, `sign_password`, `payamount` form posts. Checkout Modern uses OAuth client credentials + JSON orders/payment-links + `X-Paysera-Signature` HMAC on the raw callback body.
 
 Also keep existing contact env if you use the form: `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `CONTACT_TO`.
-
-Checkout no longer requires Redis. Paysera holds the durable order; the signature-verified callback records `callbackVerified` + payment id locally (memory / optional Redis / local file). The dashboard merges that with `GET /merchant-order/integration/v1/orders?q=TEST-`.
 
 ### Paysera project setup
 
@@ -55,9 +53,12 @@ Checkout no longer requires Redis. Paysera holds the durable order; the signatur
 
 ### Smoke test
 
-1. Confirm `PAYSERA_CLIENT_ID` and `PAYSERA_CLIENT_SECRET` are set and the site is redeployed
+1. Confirm env vars are set and the site is redeployed
 2. Visit `/paysera-test/` → Pay €1 → complete the Paysera **test** payment simulator (success)
 3. Land on `/paysera-test/thanks/` — message only; dashboard may still show unpaid for a moment
 4. Refresh `/paysera-test/dashboard/` until status is `paid` and **Paysera payment ID** is filled
 5. Confirm the thank-you URL alone never flips status without a callback
 
+### Local persistence note
+
+Without Upstash, orders are written to `data/paysera-orders.json` (gitignored) for local Node runs. On Vercel, Upstash is required so unpaid → paid survives across serverless invocations.

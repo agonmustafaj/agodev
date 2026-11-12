@@ -121,11 +121,9 @@
             }
             var rows = orders.map(function (o) {
               var statusClass = o.status === 'paid' ? 'paid' : 'unpaid';
-              var verified = o.callbackVerified ? 'yes' : 'no';
               return '<tr>' +
                 '<td><code>' + (o.id || '') + '</code></td>' +
                 '<td class="' + statusClass + '">' + (o.status || '') + '</td>' +
-                '<td>' + verified + '</td>' +
                 '<td>' + euros(o.amountCents, o.currency) + '</td>' +
                 '<td><code>' + (o.payseraOrderId || '—') + '</code></td>' +
                 '<td><code>' + (o.payseraPaymentId || '—') + '</code></td>' +
@@ -134,7 +132,7 @@
             }).join('');
             wrap.innerHTML =
               '<table><thead><tr>' +
-              '<th>Order</th><th>Status</th><th>Callback verified</th><th>Amount</th><th>Paysera order ID</th><th>Paysera payment ID</th><th>Timestamps</th>' +
+              '<th>Order</th><th>Status</th><th>Amount</th><th>Paysera order ID</th><th>Paysera payment ID</th><th>Timestamps</th>' +
               '</tr></thead><tbody>' + rows + '</tbody></table>';
           });
         }).catch(function (err) {

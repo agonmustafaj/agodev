@@ -131,89 +131,6 @@ function extractPaymentId(payload) {
   return null;
 }
 
-function mapPayseraStatus(status) {
-  if (status === 'paid') return 'paid';
-  if (status === 'canceled' || status === 'cancelled' || status === 'closed') return status;
-  return 'unpaid';
-}
-
-function extractPaymentIdFromOrder(order) {
-  if (!order) return null;
-  return extractPaymentId({ order: order });
-}
-
-async function listPayseraOrders(accessToken, { referencePrefix, size }) {
-  const params = new URLSearchParams();
-  params.set('size', String(size || 50));
-  params.set('order_direction', 'desc');
-  if (referencePrefix) params.set('q', referencePrefix);
-  const response = await fetch(ORDERS_URL + '?' + params.toString(), {
-    headers: {
-      Authorization: 'Bearer ' + accessToken,
-      'Content-Type': 'application/json'
-    }
-  });
-  const text = await response.text();
-  if (!response.ok) {
-    const err = new Error('Paysera list orders failed (' + response.status + '): ' + text.slice(0, 400));
-    err.status = 502;
-    throw err;
-  }
-  return JSON.parse(text);
-}
-
-async function getPayseraOrder(accessToken, payseraOrderId) {
-  const response = await fetch(ORDERS_URL + '/' + encodeURIComponent(payseraOrderId), {
-    headers: {
-      Authorization: 'Bearer ' + accessToken,
-      'Content-Type': 'application/json'
-    }
-  });
-  const text = await response.text();
-  if (!response.ok) {
-    const err = new Error('Paysera get order failed (' + response.status + '): ' + text.slice(0, 400));
-    err.status = 502;
-    throw err;
-  }
-  return JSON.parse(text);
-}
-
-function normalizePayseraListItem(item, localByRef) {
-  const reference = item.reference || item.purchase && item.purchase.reference || null;
-  const payseraOrderId = item.id || item.order_id || null;
-  const amountCents = item.amount != null
-    ? item.amount
-    : (item.purchase && item.purchase.amount);
-  const currency = item.currency || (item.purchase && item.purchase.currency) || 'EUR';
-  const status = mapPayseraStatus(item.status);
-  const local = (reference && localByRef[reference]) ||
-    (payseraOrderId && localByRef['paysera:' + payseraOrderId]) ||
-    null;
-  const createdAt = item.created_at
-    ? new Date(Number(item.created_at) * 1000).toISOString()
-    : (local && local.createdAt) || null;
-  const paidAt = item.payment_accepted_at
-    ? new Date(Number(item.payment_accepted_at) * 1000).toISOString()
-    : (local && local.paidAt) || null;
-
-  return {
-    id: reference || (local && local.id) || payseraOrderId,
-    productSku: TEST_PRODUCT.sku,
-    productName: TEST_PRODUCT.name,
-    amountCents: amountCents != null ? amountCents : TEST_PRODUCT.amountCents,
-    currency: currency,
-    status: local && local.callbackVerified && local.status === 'paid' ? 'paid' : status,
-    payseraOrderId: payseraOrderId,
-    payseraPaymentId: (local && local.payseraPaymentId) || null,
-    paymentLinkId: (local && local.paymentLinkId) || null,
-    callbackVerified: !!(local && local.callbackVerified),
-    isTest: local ? local.isTest !== false : true,
-    createdAt: createdAt,
-    paidAt: status === 'paid' ? paidAt : (local && local.paidAt) || null,
-    updatedAt: (local && local.updatedAt) || paidAt || createdAt
-  };
-}
-
 module.exports = {
   TEST_PRODUCT,
   siteUrl,
@@ -221,11 +138,5 @@ module.exports = {
   getAccessToken,
   createPayseraOrder,
   createPaymentLink,
-  extractPaymentId,
-  extractPaymentIdFromOrder,
-  listPayseraOrders,
-  getPayseraOrder,
-  normalizePayseraListItem,
-  mapPayseraStatus
+  extractPaymentId
 };
-

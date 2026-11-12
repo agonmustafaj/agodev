@@ -1,8 +1,8 @@
 'use strict';
 
 const crypto = require('crypto');
-const { requirePayseraEnv, extractPaymentId, TEST_PRODUCT } = require('../lib/paysera');
-const { upsertPaidFromCallback, updateOrder, findByMerchantOrPayseraId } = require('../lib/orders-store');
+const { requirePayseraEnv, extractPaymentId } = require('../lib/paysera');
+const { findByMerchantOrPayseraId, updateOrder } = require('../lib/orders-store');
 
 // Need the raw body for HMAC verification (do not re-serialize JSON).
 module.exports.config = {
@@ -71,28 +71,37 @@ module.exports = async function handler(req, res) {
   const payseraOrderId = orderBlock.paysera_order_id || orderBlock.order_id || null;
   const orderStatus = orderBlock.status || null;
   const isTest = orderBlock.is_test === true || payload.is_test === true;
-  const amountCents = orderBlock.amount != null ? orderBlock.amount : null;
-  const currency = orderBlock.currency || null;
 
   // Only the signature-verified callback may mark an order paid.
   // Branch on order.status from the snapshot (Checkout Modern guidance).
   if (orderStatus === 'paid') {
-    const paymentId = extractPaymentId(payload);
-    await upsertPaidFromCallback({
-      merchantOrderId: merchantOrderId,
-      payseraOrderId: payseraOrderId,
-      payseraPaymentId: paymentId,
-      amountCents: amountCents,
-      currency: currency,
-      isTest: isTest,
-      product: TEST_PRODUCT
-    });
+    const existing = await findByMerchantOrPayseraId(merchantOrderId, payseraOrderId);
+    if (!existing) {
+      console.error('callback: unknown order', merchantOrderId, payseraOrderId);
+      // Acknowledge so Paysera does not keep retrying forever for an unknown test id.
+      return res.status(200).send('OK');
+    }
+    if (existing.status !== 'paid') {
+      const paymentId = extractPaymentId(payload);
+      await updateOrder(existing.id, {
+        status: 'paid',
+        paidAt: new Date().toISOString(),
+        payseraOrderId: payseraOrderId || existing.payseraOrderId,
+        payseraPaymentId: paymentId || existing.payseraPaymentId,
+        isTest: isTest || existing.isTest
+      });
+    } else if (!existing.payseraPaymentId) {
+      const paymentId = extractPaymentId(payload);
+      if (paymentId) {
+        await updateOrder(existing.id, { payseraPaymentId: paymentId });
+      }
+    }
   } else if (payload.event && payload.event.type === 'payment') {
     // Thin payment event: store payment id when settled; do not mark paid unless order says so.
     const payment = payload.payment || {};
     if (payment.id && (payment.status === 'settled' || payment.status === 'paid')) {
       const existing = await findByMerchantOrPayseraId(merchantOrderId, payseraOrderId);
-      if (existing) {
+      if (existing && !existing.payseraPaymentId) {
         await updateOrder(existing.id, {
           payseraPaymentId: String(payment.id),
           payseraOrderId: payseraOrderId || existing.payseraOrderId
