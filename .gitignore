@@ -1,5 +1,3 @@
 node_modules/
 .vercel/
 .env*
-data/paysera-orders.json
-
