@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /paysera-test/
+Disallow: /api/
 
 Sitemap: https://agodev.agonmustafaj.com/sitemap.xml
+
