@@ -7,12 +7,21 @@ const crypto = require('crypto');
 const LOCAL_FILE = path.join(__dirname, '..', '..', 'data', 'paysera-orders.json');
 const REDIS_KEY = 'agodev:paysera-test:orders';
 
+// Soft in-process cache (helps warm Vercel instances; Paysera remains durable source).
+const memory = globalThis.__agodevPayseraOrders || (globalThis.__agodevPayseraOrders = new Map());
+
 function newOrderId() {
   return 'TEST-' + Date.now().toString(36).toUpperCase() + '-' + crypto.randomBytes(3).toString('hex');
 }
 
 function redisConfigured() {
   return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+}
+
+function storageMode() {
+  if (redisConfigured()) return 'upstash-redis';
+  if (process.env.VERCEL) return 'memory+paysera';
+  return 'local-file';
 }
 
 async function redisCommand(command) {
@@ -50,34 +59,47 @@ function writeLocal(orders) {
   fs.writeFileSync(LOCAL_FILE, JSON.stringify(orders, null, 2) + '\n', 'utf8');
 }
 
-async function listOrders() {
-  if (redisConfigured()) {
-    const raw = await redisCommand(['GET', REDIS_KEY]);
-    if (!raw) return [];
-    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    return Array.isArray(parsed) ? parsed : [];
-  }
-  return readLocal();
+function memoryList() {
+  return Array.from(memory.values()).sort(function (a, b) {
+    return String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || ''));
+  });
 }
 
-async function saveOrders(orders) {
+function memoryUpsert(order) {
+  memory.set(order.id, order);
+  return order;
+}
+
+async function listLocalOrders() {
+  if (redisConfigured()) {
+    const raw = await redisCommand(['GET', REDIS_KEY]);
+    if (!raw) return memoryList();
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const list = Array.isArray(parsed) ? parsed : [];
+    list.forEach(function (o) { if (o && o.id) memory.set(o.id, o); });
+    return list.length ? list : memoryList();
+  }
+  if (!process.env.VERCEL) {
+    const list = readLocal();
+    list.forEach(function (o) { if (o && o.id) memory.set(o.id, o); });
+    return list.length ? list : memoryList();
+  }
+  return memoryList();
+}
+
+async function saveLocalOrders(orders) {
+  orders.forEach(function (o) { if (o && o.id) memory.set(o.id, o); });
   if (redisConfigured()) {
     await redisCommand(['SET', REDIS_KEY, JSON.stringify(orders)]);
     return;
   }
-  // On Vercel the filesystem is ephemeral — require Redis for durable store.
-  if (process.env.VERCEL) {
-    const err = new Error(
-      'Order persistence needs UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN on Vercel'
-    );
-    err.status = 500;
-    throw err;
+  if (!process.env.VERCEL) {
+    writeLocal(orders);
   }
-  writeLocal(orders);
+  // On Vercel without Redis: memory only. Durable unpaid/paid state lives in Paysera.
 }
 
 async function createUnpaidOrder(product) {
-  const orders = await listOrders();
   const order = {
     id: newOrderId(),
     productSku: product.sku,
@@ -88,27 +110,95 @@ async function createUnpaidOrder(product) {
     payseraOrderId: null,
     payseraPaymentId: null,
     paymentLinkId: null,
+    callbackVerified: false,
     isTest: true,
     createdAt: new Date().toISOString(),
     paidAt: null,
     updatedAt: new Date().toISOString()
   };
-  orders.unshift(order);
-  await saveOrders(orders);
+  memoryUpsert(order);
+  try {
+    const orders = await listLocalOrders();
+    const without = orders.filter(function (o) { return o.id !== order.id; });
+    without.unshift(order);
+    await saveLocalOrders(without);
+  } catch (e) {
+    // Never block checkout on optional local persistence.
+    console.error('createUnpaidOrder persist soft-fail:', e && e.message);
+  }
   return order;
 }
 
 async function updateOrder(id, patch) {
-  const orders = await listOrders();
-  const idx = orders.findIndex(function (o) { return o.id === id; });
-  if (idx === -1) return null;
+  let orders;
+  try {
+    orders = await listLocalOrders();
+  } catch (e) {
+    orders = memoryList();
+  }
+  let idx = orders.findIndex(function (o) { return o.id === id; });
+  if (idx === -1) {
+    const mem = memory.get(id);
+    if (!mem) return null;
+    orders.unshift(mem);
+    idx = 0;
+  }
   orders[idx] = Object.assign({}, orders[idx], patch, { updatedAt: new Date().toISOString() });
-  await saveOrders(orders);
+  memoryUpsert(orders[idx]);
+  try {
+    await saveLocalOrders(orders);
+  } catch (e) {
+    console.error('updateOrder persist soft-fail:', e && e.message);
+  }
   return orders[idx];
 }
 
+async function upsertPaidFromCallback({
+  merchantOrderId,
+  payseraOrderId,
+  payseraPaymentId,
+  amountCents,
+  currency,
+  isTest,
+  product
+}) {
+  const id = merchantOrderId || ('TEST-CB-' + (payseraOrderId || Date.now()));
+  let existing = null;
+  try {
+    existing = await findByMerchantOrPayseraId(merchantOrderId, payseraOrderId);
+  } catch (e) {
+    existing = memoryList().find(function (o) {
+      return (merchantOrderId && o.id === merchantOrderId) ||
+        (payseraOrderId && o.payseraOrderId === payseraOrderId);
+    }) || null;
+  }
+
+  const base = existing || {
+    id: id,
+    productSku: product.sku,
+    productName: product.name,
+    amountCents: amountCents != null ? amountCents : product.amountCents,
+    currency: currency || product.currency,
+    payseraOrderId: payseraOrderId || null,
+    paymentLinkId: null,
+    isTest: true,
+    createdAt: new Date().toISOString()
+  };
+
+  return updateOrder(base.id, {
+    status: 'paid',
+    paidAt: new Date().toISOString(),
+    payseraOrderId: payseraOrderId || base.payseraOrderId,
+    payseraPaymentId: payseraPaymentId || base.payseraPaymentId || null,
+    callbackVerified: true,
+    isTest: isTest || base.isTest,
+    amountCents: amountCents != null ? amountCents : base.amountCents,
+    currency: currency || base.currency
+  });
+}
+
 async function findByMerchantOrPayseraId(merchantOrderId, payseraOrderId) {
-  const orders = await listOrders();
+  const orders = await listLocalOrders();
   return orders.find(function (o) {
     return (merchantOrderId && o.id === merchantOrderId) ||
       (payseraOrderId && o.payseraOrderId === payseraOrderId);
@@ -116,9 +206,12 @@ async function findByMerchantOrPayseraId(merchantOrderId, payseraOrderId) {
 }
 
 module.exports = {
-  listOrders,
+  newOrderId,
+  listLocalOrders,
   createUnpaidOrder,
   updateOrder,
+  upsertPaidFromCallback,
   findByMerchantOrPayseraId,
-  redisConfigured
+  redisConfigured,
+  storageMode
 };
