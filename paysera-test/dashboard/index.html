@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Paysera Test Dashboard | AgoDev</title>
+  <meta name="description" content="Dashboard for AgoDev Paysera Test Mode orders.">
+  <link rel="icon" type="image/png" href="https://agonmustafaj.com/assets/images/favicon.png?v=20261017c">
+  <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'))}catch(e){}</script>
+  <link rel="stylesheet" href="https://agonmustafaj.com/css/style.css?v=20261103a">
+  <style>
+    .paysera-test { max-width: 56rem; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+    .paysera-test .banner {
+      border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.75rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+    .paysera-test table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    .paysera-test th,
+    .paysera-test td {
+      text-align: left;
+      padding: 0.65rem 0.5rem;
+      border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+      vertical-align: top;
+      word-break: break-word;
+    }
+    .paysera-test th {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      opacity: 0.7;
+    }
+    .paysera-test .paid { color: #15803d; font-weight: 600; }
+    .paysera-test .unpaid { opacity: 0.75; }
+    .paysera-test .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: end;
+      margin: 1.25rem 0 1.5rem;
+    }
+    .paysera-test .toolbar label { display: block; font-size: 0.85rem; margin-bottom: 0.35rem; }
+    .paysera-test .toolbar input {
+      min-width: 16rem;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+      background: transparent;
+      color: inherit;
+    }
+    .paysera-test .links { margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+    .paysera-test .links a { text-decoration: underline; }
+    .paysera-test .error { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <main class="paysera-test">
+    <div class="banner">TEST DASHBOARD · paid status comes only from the verified Paysera callback</div>
+    <span class="label">AgoDev</span>
+    <h1>Paysera test orders</h1>
+    <p>Shows the €1 test product orders. Refresh after a Test Mode payment; the thank-you page does not update status.</p>
+    <div class="toolbar">
+      <div>
+        <label for="token">Dashboard token (if PAYSERA_DASHBOARD_TOKEN is set)</label>
+        <input id="token" type="password" autocomplete="off" placeholder="optional">
+      </div>
+      <button class="btn btn-secondary" type="button" id="refresh">Refresh</button>
+    </div>
+    <p id="meta" class="meta"></p>
+    <div id="table-wrap">
+      <p>Loading…</p>
+    </div>
+    <div class="links">
+      <a href="https://agodev.agonmustafaj.com/paysera-test/">Start a €1 test payment</a>
+      <a href="https://agodev.agonmustafaj.com/">AgoDev home</a>
+    </div>
+  </main>
+  <script>
+    (function () {
+      var tokenInput = document.getElementById('token');
+      var meta = document.getElementById('meta');
+      var wrap = document.getElementById('table-wrap');
+      try {
+        tokenInput.value = localStorage.getItem('payseraDashboardToken') || '';
+      } catch (e) {}
+
+      function euros(cents, currency) {
+        return ((Number(cents) || 0) / 100).toFixed(2) + ' ' + (currency || 'EUR');
+      }
+
+      function load() {
+        var token = tokenInput.value.trim();
+        try { localStorage.setItem('payseraDashboardToken', token); } catch (e) {}
+        var url = 'https://agodev.agonmustafaj.com/api/paysera/orders';
+        if (token) url += '?token=' + encodeURIComponent(token);
+        wrap.innerHTML = '<p>Loading…</p>';
+        meta.textContent = '';
+        fetch(url, {
+          headers: token ? { Authorization: 'Bearer ' + token } : {}
+        }).then(function (res) {
+          return res.json().then(function (data) {
+            if (!res.ok || !data.success) {
+              throw new Error((data && data.message) || ('HTTP ' + res.status));
+            }
+            var product = data.product || {};
+            meta.textContent = 'Product: ' + (product.name || '€1 test') +
+              ' · ' + euros(product.amountCents, product.currency) +
+              ' · storage: ' + (data.storage || 'unknown');
+            var orders = data.orders || [];
+            if (!orders.length) {
+              wrap.innerHTML = '<p>No orders yet. Start one from the test checkout page.</p>';
+              return;
+            }
+            var rows = orders.map(function (o) {
+              var statusClass = o.status === 'paid' ? 'paid' : 'unpaid';
+              return '<tr>' +
+                '<td><code>' + (o.id || '') + '</code></td>' +
+                '<td class="' + statusClass + '">' + (o.status || '') + '</td>' +
+                '<td>' + euros(o.amountCents, o.currency) + '</td>' +
+                '<td><code>' + (o.payseraOrderId || '—') + '</code></td>' +
+                '<td><code>' + (o.payseraPaymentId || '—') + '</code></td>' +
+                '<td>' + (o.paidAt || o.createdAt || '') + '</td>' +
+                '</tr>';
+            }).join('');
+            wrap.innerHTML =
+              '<table><thead><tr>' +
+              '<th>Order</th><th>Status</th><th>Amount</th><th>Paysera order ID</th><th>Paysera payment ID</th><th>Timestamps</th>' +
+              '</tr></thead><tbody>' + rows + '</tbody></table>';
+          });
+        }).catch(function (err) {
+          wrap.innerHTML = '<p class="error">' + err.message + '</p>';
+        });
+      }
+
+      document.getElementById('refresh').addEventListener('click', load);
+      tokenInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') load();
+      });
+      load();
+    })();
+  </script>
+</body>
+</html>
