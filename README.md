@@ -30,8 +30,10 @@ You already have a Cloudflare project named `portfolio` (repo `agonmustafaj/port
 4. Build settings:
    - Framework preset: **None**
    - Build command: *(leave empty)*
-   - Build output directory: `/` or `.`
+   - Build output directory: **`public`** (required; do **not** use `/` or `.`)
 5. Save and deploy. Note the `*.pages.dev` URL (for example `agodev.pages.dev`).
+
+**Why `public`?** Pages Functions live in repo-root `functions/`. That folder must be a **sibling** of the build output, not inside it. With output `/` or `.`, `/api/contact` never registers (browser gets a static 404/405 and the form shows “message did not send”).
 
 Ignore the failing `portfolio` / `portfolio.agonmustafaj01.workers.dev` build for this work.
 
@@ -92,10 +94,19 @@ This page loads CSS/JS from `agonmustafaj.com`. Bump `?v=` in `index.html` when 
 ## Local Function smoke test
 
 ```bash
-npx wrangler pages dev . --port 8788
-# then POST JSON to http://127.0.0.1:8788/api/contact
+npx wrangler pages dev public --port 8788
+# GET  http://127.0.0.1:8788/api/contact  → {"ok":true,...}
+# POST http://127.0.0.1:8788/api/contact  with JSON body
 # put secrets in .dev.vars (gitignored): RESEND_API_KEY, CONTACT_TO, CONTACT_FROM
 ```
+
+### After this Functions fix lands
+
+1. In Pages → **Settings** → **Builds & deployments**, set **Build output directory** to `public` (if it is still `/`).
+2. Confirm secrets exist for Production (and Preview): `RESEND_API_KEY`, `CONTACT_TO`, `CONTACT_FROM`.
+3. Trigger a new production deploy (Retry deployment, or push/merge to `main`).
+4. Smoke check: `GET https://agodev.pages.dev/api/contact` should return JSON `{"ok":true,...}`, not the HTML 404 page.
+5. Then retry the form on https://agonmustafaj.com/contact/ and https://agodev.agonmustafaj.com/#start.
 
 ## Translations
 

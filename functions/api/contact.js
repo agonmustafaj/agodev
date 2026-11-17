@@ -154,10 +154,18 @@ async function handleContact(request, env) {
     return new Response(null, { status: 204, headers: cors });
   }
 
+  if (request.method === 'GET') {
+    return json(200, {
+      ok: true,
+      service: 'agodev-contact',
+      configured: Boolean(env.RESEND_API_KEY && env.CONTACT_TO && env.CONTACT_FROM)
+    }, cors);
+  }
+
   if (request.method !== 'POST') {
     return json(405, { success: false, message: 'Method not allowed' }, {
       ...cors,
-      Allow: 'POST, OPTIONS'
+      Allow: 'GET, POST, OPTIONS'
     });
   }
 
