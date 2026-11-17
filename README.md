@@ -29,7 +29,7 @@ Project: **`agodev`** (separate from `portfolio`). Leave `portfolio` alone.
 | --- | --- | --- |
 | `RESEND_API_KEY` | `re_...` | Secret |
 | `CONTACT_TO` | `agonmustafaj01@gmail.com` (Gmail inbox is fine) | Secret |
-| `CONTACT_FROM` | `AgoDev <contact@agonmustafaj.com>` (Resend-verified sender) | Secret |
+| `CONTACT_FROM` | `contact@agonmustafaj.com` (bare email on a Resend-verified domain; do not wrap in `Name <>`) | Secret |
 | `ALLOWED_ORIGINS` (optional) | `https://agodev.agonmustafaj.com,https://agonmustafaj.com,https://www.agonmustafaj.com` | Plain text |
 
 Path: **Workers & Pages → agodev → Settings → Variables and secrets → Production → Add** (choose **Secret**, not plain Variable).
@@ -44,6 +44,7 @@ npx wrangler pages secret put CONTACT_FROM --project-name=agodev
 ```
 
 Then confirm: `GET https://agodev.pages.dev/api/contact` → `"configured":true`.
+If still false, the JSON `missing` array lists which secret names did not bind (e.g. `["CONTACT_FROM"]`). Fix those names/values on **Production**, redeploy, recheck.
 
 **Gmail:** receive on Gmail via `CONTACT_TO`. Cloudflare cannot send with Gmail SMTP; Resend sends.
 

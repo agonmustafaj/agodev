@@ -1,11 +1,44 @@
 /**
- * Cloudflare Pages Advanced mode Worker (_worker.js).
- * Handles /api/contact and serves static assets via env.ASSETS.
+ * Optional standalone Worker (worker/). Same contact handler as root _worker.js.
  * Secrets: RESEND_API_KEY, CONTACT_TO, CONTACT_FROM
  * Optional: ALLOWED_ORIGINS
  */
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const REQUIRED_SECRETS = ['RESEND_API_KEY', 'CONTACT_TO', 'CONTACT_FROM'];
+
+/** Pages Advanced mode: bindings live on env. Guard rare nested wrappers. */
+function runtimeEnv(env) {
+  if (!env || typeof env !== 'object') return {};
+  const nested = env.env;
+  if (
+    nested &&
+    typeof nested === 'object' &&
+    (nested.ASSETS || nested.RESEND_API_KEY || nested.CONTACT_TO || nested.CONTACT_FROM)
+  ) {
+    return nested;
+  }
+  return env;
+}
+
+function readSecret(env, name) {
+  const bag = runtimeEnv(env);
+  const value = bag[name];
+  if (value == null) return '';
+  return String(value).trim();
+}
+
+function missingSecrets(env) {
+  return REQUIRED_SECRETS.filter((name) => !readSecret(env, name));
+}
+
+/** CONTACT_FROM may be bare email or `Name <email@domain>`. */
+function parseFromAddress(raw) {
+  const value = String(raw || '').trim();
+  const angled = value.match(/<([^>]+)>/);
+  if (angled) return angled[1].trim();
+  return value;
+}
 
 const PROJECT_TYPES = {
   seo: 'SEO',
@@ -35,7 +68,7 @@ const SITE_NAMES = {
 };
 
 function parseAllowedOrigins(env) {
-  const raw = (env && env.ALLOWED_ORIGINS) || Object.keys(SITE_NAMES).join(',');
+  const raw = readSecret(env, 'ALLOWED_ORIGINS') || Object.keys(SITE_NAMES).join(',');
   return raw.split(',').map((s) => s.trim()).filter(Boolean);
 }
 
@@ -123,10 +156,11 @@ function htmlBody(rows, meta) {
 }
 
 async function sendWithResend(env, mail) {
+  const apiKey = readSecret(env, 'RESEND_API_KEY');
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      Authorization: 'Bearer ' + env.RESEND_API_KEY,
+      Authorization: 'Bearer ' + apiKey,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
@@ -149,16 +183,21 @@ async function handleContact(request, env) {
   const origin = request.headers.get('Origin') || '';
   const allowed = parseAllowedOrigins(env);
   const cors = corsHeaders(origin, allowed);
+  const missing = missingSecrets(env);
 
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: cors });
   }
 
   if (request.method === 'GET') {
+    // `missing` lists binding NAMES only (never secret values) so Agon can see
+    // which Production Secrets did not bind after deploy.
     return json(200, {
       ok: true,
       service: 'agodev-contact',
-      configured: Boolean(env.RESEND_API_KEY && env.CONTACT_TO && env.CONTACT_FROM)
+      configured: missing.length === 0,
+      missing,
+      hasAssets: Boolean(runtimeEnv(env).ASSETS)
     }, cors);
   }
 
@@ -202,9 +241,24 @@ async function handleContact(request, env) {
     return json(400, { success: false, message: 'Invalid timeline selection.' }, cors);
   }
 
-  if (!env.RESEND_API_KEY || !env.CONTACT_TO || !env.CONTACT_FROM) {
-    console.error('Missing RESEND_API_KEY, CONTACT_TO, or CONTACT_FROM');
-    return json(500, { success: false, message: 'Email is not configured.' }, cors);
+  if (missing.length) {
+    console.error('Missing secrets:', missing.join(', '));
+    return json(500, {
+      success: false,
+      message: 'Email is not configured.',
+      missing
+    }, cors);
+  }
+
+  const contactTo = readSecret(env, 'CONTACT_TO');
+  const contactFrom = parseFromAddress(readSecret(env, 'CONTACT_FROM'));
+  if (!EMAIL_RE.test(contactFrom)) {
+    console.error('CONTACT_FROM is not a valid email');
+    return json(500, {
+      success: false,
+      message: 'Email is not configured.',
+      missing: ['CONTACT_FROM']
+    }, cors);
   }
 
   const site = SITE_NAMES[origin] || 'AgoDev';
@@ -215,8 +269,8 @@ async function handleContact(request, env) {
   try {
     await sendWithResend(env, {
       fromName: site + ' faqja',
-      fromAddress: env.CONTACT_FROM,
-      to: env.CONTACT_TO,
+      fromAddress: contactFrom,
+      to: contactTo,
       replyTo: email,
       subject: 'Mesazh nga faqja: ' + name,
       text: textBody(rows, meta),
@@ -237,12 +291,6 @@ export default {
     if (path === '/api/contact') {
       return handleContact(request, env);
     }
-    if (request.method === 'GET' && path === '/') {
-      return handleContact(request, env);
-    }
-    return new Response(JSON.stringify({ success: false, message: 'Not found. POST /api/contact' }), {
-      status: 404,
-      headers: { 'Content-Type': 'application/json; charset=utf-8' }
-    });
+    return json(404, { success: false, message: 'Not found' });
   }
 };
