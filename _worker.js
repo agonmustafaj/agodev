@@ -1,8 +1,8 @@
 /**
- * Cloudflare Pages Function: POST /api/contact
- * Secrets (Pages → Settings → Environment variables, encrypt):
- *   RESEND_API_KEY, CONTACT_TO, CONTACT_FROM
- * Optional plain var: ALLOWED_ORIGINS (comma-separated)
+ * Cloudflare Pages Advanced mode Worker (_worker.js).
+ * Handles /api/contact and serves static assets via env.ASSETS.
+ * Secrets: RESEND_API_KEY, CONTACT_TO, CONTACT_FROM
+ * Optional: ALLOWED_ORIGINS
  */
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -229,6 +229,14 @@ async function handleContact(request, env) {
   }
 }
 
-export async function onRequest(context) {
-  return handleContact(context.request, context.env);
-}
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname.replace(/\/+$/, '') || '/';
+    if (path === '/api/contact') {
+      return handleContact(request, env);
+    }
+    return env.ASSETS.fetch(request);
+  }
+};

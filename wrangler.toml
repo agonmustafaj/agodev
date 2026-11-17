@@ -1,11 +1,10 @@
-# Cloudflare Pages project for AgoDev (static site + /api/contact Function)
-# Static assets live in public/. Functions stay at repo-root functions/
-# so they are siblings of the build output (required for Pages Functions).
+# Cloudflare Pages (Advanced mode: root _worker.js + static assets)
+# Dashboard: Framework None, Build command empty, Build output directory `/` or `.`
 name = "agodev"
 compatibility_date = "2026-11-01"
-pages_build_output_dir = "public"
+pages_build_output_dir = "."
 
-# Secrets (Pages → Settings → Environment variables, encrypt):
+# Encrypted secrets (Pages → Settings → Environment variables):
 #   RESEND_API_KEY, CONTACT_TO, CONTACT_FROM
-# Optional plain text var:
+# Optional plain var:
 #   ALLOWED_ORIGINS=https://agodev.agonmustafaj.com,https://agonmustafaj.com,https://www.agonmustafaj.com

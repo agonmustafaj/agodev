@@ -1,0 +1,8 @@
+# Optional standalone Worker if Pages will not run root _worker.js.
+#   cd worker && npx wrangler login && npx wrangler deploy
+#   npx wrangler secret put RESEND_API_KEY
+#   npx wrangler secret put CONTACT_TO
+#   npx wrangler secret put CONTACT_FROM
+name = "agodev-contact"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
