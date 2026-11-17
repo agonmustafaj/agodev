@@ -1,0 +1,38 @@
+# Optional: deploy AgoDev to Cloudflare Pages with Wrangler.
+# Prefer connecting the GitHub repo in the Cloudflare dashboard (Workers & Pages → Create → Pages → Connect to Git).
+# Use this workflow only if Agon wants CI deploy instead of dashboard Git integration.
+#
+# Required GitHub Actions secrets:
+#   CLOUDFLARE_API_TOKEN   (Account → Edit Cloudflare Workers, or Pages edit)
+#   CLOUDFLARE_ACCOUNT_ID
+#
+# Function secrets (RESEND_API_KEY, CONTACT_TO, CONTACT_FROM) are NOT set here.
+# Set them once in Cloudflare: Pages project → Settings → Environment variables (Production + Preview).
+
+name: Deploy Cloudflare Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy . --project-name=agodev

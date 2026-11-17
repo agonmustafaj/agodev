@@ -39,7 +39,8 @@
   <link rel="icon" type="image/png" href="https://agonmustafaj.com/assets/images/favicon.png?v=20261017c">
   <link rel="apple-touch-icon" href="https://agonmustafaj.com/assets/images/favicon.png?v=20261017c">
   <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'))}catch(e){}</script>
-  <link rel="stylesheet" href="https://agonmustafaj.com/css/style.css?v=20261103a">
+  <link rel="stylesheet" href="https://agonmustafaj.com/css/style.css?v=20261117a">
+  <link rel="stylesheet" href="https://agodev.agonmustafaj.com/css/contact-form.css?v=20261117a">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -248,24 +249,71 @@
           <span class="label" data-i18n="services.ctaLabel">Start a project</span>
           <h2 id="cta-heading" data-i18n="services.ctaTitle">Tell me about the business</h2>
           <p data-i18n="services.ctaLead">If you need SEO or a website that presents the company clearly and can be found in search, send a short note. I'll reply with next steps.</p>
-          <form id="contact-form" class="contact-form" novalidate>
-            <div class="form-group">
-              <label for="name" data-i18n="agodev.formName">Name</label>
-              <input id="name" name="name" type="text" autocomplete="name" required>
-              <span class="form-error" data-i18n="agodev.formRequired">This field is required.</span>
+          <form id="contact-form" class="contact-form contact-form--card" data-endpoint="https://agodev.agonmustafaj.com/api/contact" novalidate>
+            <h3 class="contact-form-title" data-i18n="agodev.formTitle">Send a project brief</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="projectType" data-i18n="agodev.formProjectType">Project type</label>
+                <select id="projectType" name="projectType" required>
+                  <option value="" data-i18n="agodev.formProjectTypePlaceholder">Select project type</option>
+                  <option value="seo" data-i18n="agodev.formProjectSeo">SEO</option>
+                  <option value="website" data-i18n="agodev.formProjectWebsite">Website</option>
+                  <option value="both" data-i18n="agodev.formProjectBoth">SEO and website</option>
+                </select>
+                <span class="form-error" data-i18n="agodev.formRequired">This field is required.</span>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="email" data-i18n="agodev.formEmail">Email</label>
-              <input id="email" name="email" type="email" autocomplete="email" required>
-              <span class="form-error" data-i18n="agodev.formRequired">This field is required.</span>
+            <div class="form-row form-row--2">
+              <div class="form-group">
+                <label for="name" data-i18n="agodev.formName">Name</label>
+                <input id="name" name="name" type="text" autocomplete="name" required>
+                <span class="form-error" data-i18n="agodev.formRequired">This field is required.</span>
+              </div>
+              <div class="form-group">
+                <label for="email" data-i18n="agodev.formEmail">Email</label>
+                <input id="email" name="email" type="email" autocomplete="email" required>
+                <span class="form-error" data-i18n="agodev.formRequired">This field is required.</span>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="message" data-i18n="agodev.formMessage">About the project</label>
-              <textarea id="message" name="message" required></textarea>
-              <span class="form-error" data-i18n="agodev.formRequired">This field is required.</span>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="phone" data-i18n="agodev.formPhone">Phone</label>
+                <input id="phone" name="phone" type="tel" autocomplete="tel" required>
+                <span class="form-error" data-i18n="agodev.formRequired">This field is required.</span>
+              </div>
+            </div>
+            <div class="form-row form-row--2">
+              <div class="form-group">
+                <label for="budget" data-i18n="agodev.formBudget">Budget (optional)</label>
+                <select id="budget" name="budget">
+                  <option value="" data-i18n="agodev.formBudgetPlaceholder">Select a budget</option>
+                  <option value="under_500" data-i18n="agodev.formBudgetUnder500">Under €500</option>
+                  <option value="500_1500" data-i18n="agodev.formBudget5001500">€500 to €1,500</option>
+                  <option value="1500_3000" data-i18n="agodev.formBudget15003000">€1,500 to €3,000</option>
+                  <option value="3000_plus" data-i18n="agodev.formBudget3000Plus">€3,000+</option>
+                  <option value="unsure" data-i18n="agodev.formBudgetUnsure">Not sure yet</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="timeline" data-i18n="agodev.formTimeline">Timeline (optional)</label>
+                <select id="timeline" name="timeline">
+                  <option value="" data-i18n="agodev.formTimelinePlaceholder">Select a timeline</option>
+                  <option value="asap" data-i18n="agodev.formTimelineAsap">As soon as possible</option>
+                  <option value="2_4_weeks" data-i18n="agodev.formTimeline2to4">2 to 4 weeks</option>
+                  <option value="1_2_months" data-i18n="agodev.formTimeline1to2">1 to 2 months</option>
+                  <option value="flexible" data-i18n="agodev.formTimelineFlexible">Flexible</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="message" data-i18n="agodev.formMessage">About the project</label>
+                <textarea id="message" name="message" rows="5" required></textarea>
+                <span class="form-error" data-i18n="agodev.formRequired">This field is required.</span>
+              </div>
             </div>
             <input class="form-honey" type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
-            <button type="submit" class="btn btn-primary" data-i18n="agodev.formSend">Send message</button>
+            <button type="submit" class="btn btn-primary contact-form-submit" data-i18n="agodev.formSend">Send message</button>
             <p class="form-success" data-i18n="agodev.formSent">Message sent. I will reply by email.</p>
             <p class="form-error form-status" data-i18n="agodev.formFailed">The message did not send. Try again, or email me directly.</p>
           </form>
@@ -281,8 +329,8 @@
 
   <div id="site-footer"></div>
 
-  <script src="https://agonmustafaj.com/js/data.js?v=20261103a" defer></script>
-  <script src="https://agonmustafaj.com/js/i18n.js?v=20261103a" defer></script>
-  <script src="https://agonmustafaj.com/js/script.js?v=20261103a" defer></script>
+  <script src="https://agonmustafaj.com/js/data.js?v=20261117a" defer></script>
+  <script src="https://agonmustafaj.com/js/i18n.js?v=20261117a" defer></script>
+  <script src="https://agonmustafaj.com/js/script.js?v=20261117a" defer></script>
 </body>
 </html>
