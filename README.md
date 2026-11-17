@@ -1,9 +1,100 @@
 # AgoDev
 
-SEO and web development by Agon Mustafaj, served at https://agodev.agonmustafaj.com/ through GitHub Pages.
+SEO and web development by Agon Mustafaj, at https://agodev.agonmustafaj.com/
 
-The page reuses the stylesheet, scripts, translations, header, footer and project data from the portfolio at https://agonmustafaj.com (repo `agonmustafaj/portfolio`). The `<base href="https://agonmustafaj.com/">` tag makes the rendered header, footer and project links point to the portfolio, so links within this page must be absolute `https://agodev.agonmustafaj.com/...` URLs.
+Static site + contact API run on **Cloudflare Pages** (GitHub source). The portfolio at https://agonmustafaj.com stays on GitHub Pages and still supplies shared CSS/JS/i18n.
 
-When the portfolio bumps its `?v=` asset versions, update the matching `<link>` and `<script>` tags in `index.html`.
+## Contact form
 
-Text on the page is translated through the `agodev.*` and `services.*` keys in the portfolio's `js/i18n.js`.
+Fields: project type, name, email, phone, optional budget, optional timeline, message. Honeypot: `botcheck`.
+
+Form posts JSON to:
+
+```text
+https://agodev.agonmustafaj.com/api/contact
+```
+
+(Pages Function: `functions/api/contact.js`)
+
+Email subject: `Mesazh nga faqja: {name}`. Body is a labeled field list (HTML + plain text) via **Resend**. Inbox can still be Gmail (`CONTACT_TO`). Cloudflare Workers/Pages cannot speak Gmail SMTP directly.
+
+## Cloudflare setup checklist (Agon)
+
+### 1. Create a **new** Pages project for AgoDev
+
+You already have a Cloudflare project named `portfolio` (repo `agonmustafaj/portfolio`). **Do not reuse or fix that project for AgoDev.** Create a separate Pages project.
+
+1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
+2. Select the **`agonmustafaj/agodev`** repository (not portfolio).
+3. Project name: `agodev` (must be distinct from `portfolio`).
+4. Build settings:
+   - Framework preset: **None**
+   - Build command: *(leave empty)*
+   - Build output directory: `/` or `.`
+5. Save and deploy. Note the `*.pages.dev` URL (for example `agodev.pages.dev`).
+
+Ignore the failing `portfolio` / `portfolio.agonmustafaj01.workers.dev` build for this work.
+
+Optional instead of dashboard Git: add GitHub Actions secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` on the **agodev** repo and use `.github/workflows/deploy-cloudflare-pages.yml`.
+
+### 2. DNS for `agodev.agonmustafaj.com`
+
+1. In Cloudflare DNS for `agonmustafaj.com`, add (or edit) a **CNAME**:
+   - Name: `agodev`
+   - Target: `agodev.pages.dev` (or the exact Pages hostname Cloudflare shows)
+   - Proxy status: **Proxied** (orange cloud)
+2. Pages project → **Custom domains** → add `agodev.agonmustafaj.com` and complete validation.
+3. Turn off GitHub Pages custom domain for this hostname if it is still active, so DNS is not split.
+4. Remove any leftover Vercel DNS / project links.
+
+### 3. Email provider (Resend → Gmail inbox)
+
+Gmail SMTP / nodemailer is not available on Cloudflare. Use Resend (HTTP); deliver to Gmail.
+
+1. Create a [Resend](https://resend.com) account and API key.
+2. Verify a sending domain you control (for example `agonmustafaj.com`), or use Resend’s onboarding sender only for tests.
+3. In Pages → **Settings** → **Environment variables** (Production and Preview):
+
+| Name | Encrypt? | Example |
+| --- | --- | --- |
+| `RESEND_API_KEY` | yes | `re_...` |
+| `CONTACT_TO` | yes | `agonmustafaj01@gmail.com` |
+| `CONTACT_FROM` | yes | `AgoDev <contact@agonmustafaj.com>` (must be allowed by Resend) |
+| `ALLOWED_ORIGINS` | no | `https://agodev.agonmustafaj.com,https://agonmustafaj.com,https://www.agonmustafaj.com` |
+
+4. Redeploy after adding secrets so Functions pick them up.
+
+Mailchannels is an alternative Worker email path; this repo ships Resend only.
+
+### 4. Wire the form endpoint
+
+Already set on the form as:
+
+```html
+data-endpoint="https://agodev.agonmustafaj.com/api/contact"
+```
+
+Portfolio `CONTACT_ENDPOINT` should match the same URL after the portfolio PR merges. Until DNS points at Cloudflare Pages, `/api/contact` will 404.
+
+### 5. Shared assets from the portfolio
+
+This page loads CSS/JS from `agonmustafaj.com`. Bump `?v=` in `index.html` when portfolio assets change. Form card CSS also ships locally at `css/contact-form.css`.
+
+### 6. What only Agon can do in the dashboard
+
+- Connect the GitHub repo (OAuth) or create the API token for Actions
+- Add the custom domain and approve DNS
+- Create Resend account, verify domain, paste secrets
+- Disable old Vercel / GitHub Pages hostname if still competing
+
+## Local Function smoke test
+
+```bash
+npx wrangler pages dev . --port 8788
+# then POST JSON to http://127.0.0.1:8788/api/contact
+# put secrets in .dev.vars (gitignored): RESEND_API_KEY, CONTACT_TO, CONTACT_FROM
+```
+
+## Translations
+
+Form copy uses `agodev.form*` keys in the portfolio `js/i18n.js` (EN + SQ).
