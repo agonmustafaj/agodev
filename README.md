@@ -111,3 +111,7 @@ npx wrangler pages dev public --port 8788
 ## Translations
 
 Form copy uses `agodev.form*` keys in the portfolio `js/i18n.js` (EN + SQ).
+
+## Deploy note
+
+Cloudflare Pages must build commit `77148a9` or newer (includes `public/` + `functions/`). Do not retry older deployments such as `f390818`.
