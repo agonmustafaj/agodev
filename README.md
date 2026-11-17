@@ -47,9 +47,11 @@ Optional instead of dashboard Git: add GitHub Actions secrets `CLOUDFLARE_API_TO
 3. Turn off GitHub Pages custom domain for this hostname if it is still active, so DNS is not split.
 4. Remove any leftover Vercel DNS / project links.
 
-### 3. Email provider (Resend → Gmail inbox)
+### 3. Email provider (Resend sends → Gmail receives)
 
-Gmail SMTP / nodemailer is not available on Cloudflare. Use Resend (HTTP); deliver to Gmail.
+**Can you use Gmail?** Yes for the inbox. Set `CONTACT_TO` to your Gmail address (for example `agonmustafaj01@gmail.com`). Form notifications arrive there like normal mail.
+
+**Can Cloudflare send through Gmail SMTP?** No. Pages/Workers cannot use Gmail SMTP or nodemailer. Sending still goes through **Resend** (HTTP API). You need a Resend account and API key; `CONTACT_FROM` must be a Resend-verified sender/domain.
 
 1. Create a [Resend](https://resend.com) account and API key.
 2. Verify a sending domain you control (for example `agonmustafaj.com`), or use Resend’s onboarding sender only for tests.
@@ -58,8 +60,8 @@ Gmail SMTP / nodemailer is not available on Cloudflare. Use Resend (HTTP); deliv
 | Name | Encrypt? | Example |
 | --- | --- | --- |
 | `RESEND_API_KEY` | yes | `re_...` |
-| `CONTACT_TO` | yes | `agonmustafaj01@gmail.com` |
-| `CONTACT_FROM` | yes | `AgoDev <contact@agonmustafaj.com>` (must be allowed by Resend) |
+| `CONTACT_TO` | yes | `agonmustafaj01@gmail.com` (Gmail inbox is fine) |
+| `CONTACT_FROM` | yes | `AgoDev <contact@agonmustafaj.com>` (must be allowed by Resend, not a raw Gmail From) |
 | `ALLOWED_ORIGINS` | no | `https://agodev.agonmustafaj.com,https://agonmustafaj.com,https://www.agonmustafaj.com` |
 
 4. Redeploy after adding secrets so Functions pick them up.
