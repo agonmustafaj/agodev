@@ -21,14 +21,29 @@ Project: **`agodev`** (separate from `portfolio`). Leave `portfolio` alone.
 | Build command | *(empty)* |
 | Build output directory | **`/`** or **`.`** (not `public`) |
 
-Secrets (Production + Preview, encrypted):
+### Production secrets (dashboard — not wrangler.toml)
 
-| Name | Example |
-| --- | --- |
-| `RESEND_API_KEY` | `re_...` |
-| `CONTACT_TO` | `agonmustafaj01@gmail.com` (Gmail inbox is fine) |
-| `CONTACT_FROM` | `AgoDev <contact@agonmustafaj.com>` (Resend-verified sender) |
-| `ALLOWED_ORIGINS` (optional plain) | `https://agodev.agonmustafaj.com,https://agonmustafaj.com,https://www.agonmustafaj.com` |
+`wrangler.toml` must **not** define `[vars]` for these. If Cloudflare says a value is “managed by wrangler.toml”, remove it from the file, deploy/retry, then add again as **Secrets**.
+
+| Name | Example | Type |
+| --- | --- | --- |
+| `RESEND_API_KEY` | `re_...` | Secret |
+| `CONTACT_TO` | `agonmustafaj01@gmail.com` (Gmail inbox is fine) | Secret |
+| `CONTACT_FROM` | `AgoDev <contact@agonmustafaj.com>` (Resend-verified sender) | Secret |
+| `ALLOWED_ORIGINS` (optional) | `https://agodev.agonmustafaj.com,https://agonmustafaj.com,https://www.agonmustafaj.com` | Plain text |
+
+Path: **Workers & Pages → agodev → Settings → Variables and secrets → Production → Add** (choose **Secret**, not plain Variable).
+
+If the dashboard still blocks adds after a Retry deploy:
+
+```bash
+npx wrangler login
+npx wrangler pages secret put RESEND_API_KEY --project-name=agodev
+npx wrangler pages secret put CONTACT_TO --project-name=agodev
+npx wrangler pages secret put CONTACT_FROM --project-name=agodev
+```
+
+Then confirm: `GET https://agodev.pages.dev/api/contact` → `"configured":true`.
 
 **Gmail:** receive on Gmail via `CONTACT_TO`. Cloudflare cannot send with Gmail SMTP; Resend sends.
 

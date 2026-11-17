@@ -4,7 +4,14 @@ name = "agodev"
 compatibility_date = "2026-11-01"
 pages_build_output_dir = "."
 
-# Encrypted secrets (Pages → Settings → Environment variables):
+# Do NOT add a [vars] (or [env.*.vars]) block for email settings.
+# Putting CONTACT_TO / CONTACT_FROM / RESEND_API_KEY in wrangler.toml locks them in the
+# Cloudflare dashboard ("managed by wrangler.toml"). Keep those as Production Secrets only:
+#   Pages → agodev → Settings → Variables and secrets → Add (Secret, Production)
 #   RESEND_API_KEY, CONTACT_TO, CONTACT_FROM
-# Optional plain var:
+# Fallback if the dashboard still blocks edits:
+#   npx wrangler pages secret put RESEND_API_KEY --project-name=agodev
+#   npx wrangler pages secret put CONTACT_TO --project-name=agodev
+#   npx wrangler pages secret put CONTACT_FROM --project-name=agodev
+# Optional plain var (dashboard only; not required — defaults are in _worker.js):
 #   ALLOWED_ORIGINS=https://agodev.agonmustafaj.com,https://agonmustafaj.com,https://www.agonmustafaj.com
