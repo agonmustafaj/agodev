@@ -127,30 +127,99 @@ function textBody(rows, meta) {
   return rows.map((row) => row.label + ': ' + row.value).join('\n') + '\n\n' + meta;
 }
 
-function htmlBody(rows, meta) {
-  const rowHtml = rows.map((row) => {
-    let value;
-    if (row.label === 'Email' && row.value) {
-      value = '<a href="mailto:' + encodeURIComponent(row.value).replace(/%40/g, '@') + '" style="color:#1e4a8c;font-weight:700;text-decoration:none;">' + escapeHtml(row.value) + '</a>';
-    } else {
-      value = '<span style="color:#111111;font-weight:700;">' + escapeHtml(row.value) + '</span>';
-    }
-    return (
-      '<tr>' +
-        '<td style="padding:8px 16px 8px 0;color:#777777;font-size:14px;line-height:1.45;vertical-align:top;white-space:nowrap;">' + escapeHtml(row.label) + '</td>' +
-        '<td style="padding:8px 0;font-size:14px;line-height:1.45;vertical-align:top;">' + value + '</td>' +
-      '</tr>'
-    );
-  }).join('');
+/**
+ * Branded HTML for Resend. Colors match portfolio/AgoDev dark theme
+ * (--bg-primary, --bg-elevated, --accent-blue, --accent-text, --text-muted).
+ * Inline table layout for email clients. No em dashes in copy.
+ */
+function htmlBody(rows, meta, site) {
+  const brand = escapeHtml(site || 'AgoDev');
+  const font =
+    "Segoe UI,system-ui,-apple-system,BlinkMacSystemFont,Helvetica Neue,Helvetica,Arial,sans-serif";
+  const rowHtml = rows
+    .map((row, index) => {
+      const border =
+        index === 0
+          ? ''
+          : 'border-top:1px solid rgba(255,255,255,0.12);';
+      let value;
+      if (row.label === 'Email' && row.value) {
+        value =
+          '<a href="mailto:' +
+          encodeURIComponent(row.value).replace(/%40/g, '@') +
+          '" style="color:#c5daf8;font-weight:600;text-decoration:none;">' +
+          escapeHtml(row.value) +
+          '</a>';
+      } else if (row.label === 'Message') {
+        value =
+          '<span style="color:#ffffff;font-weight:500;white-space:pre-wrap;">' +
+          escapeHtml(row.value) +
+          '</span>';
+      } else {
+        value =
+          '<span style="color:#ffffff;font-weight:600;">' +
+          escapeHtml(row.value) +
+          '</span>';
+      }
+      return (
+        '<tr>' +
+          '<td style="padding:14px 0;' +
+          border +
+          'vertical-align:top;">' +
+            '<div style="color:#9a9a9a;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;line-height:1.4;margin:0 0 6px 0;font-family:ui-monospace,Cascadia Mono,Consolas,monospace;">' +
+              escapeHtml(row.label) +
+            '</div>' +
+            '<div style="color:#ffffff;font-size:15px;line-height:1.55;">' +
+              value +
+            '</div>' +
+          '</td>' +
+        '</tr>'
+      );
+    })
+    .join('');
 
   return (
-    '<div style="background:#f3f4f6;padding:24px 16px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;">' +
-      '<div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:12px;padding:24px 28px;">' +
-        '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">' +
-          rowHtml +
-        '</table>' +
-        '<p style="margin:20px 0 0;color:#9ca3af;font-size:12px;line-height:1.4;">' + escapeHtml(meta) + '</p>' +
-      '</div>' +
+    '<div style="margin:0;padding:0;background:#000000;">' +
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#000000;margin:0;padding:0;width:100%;">' +
+        '<tr>' +
+          '<td style="padding:28px 16px;font-family:' +
+          font +
+          ';">' +
+            '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;margin:0 auto;background:#141414;border:1px solid rgba(255,255,255,0.16);">' +
+              '<tr>' +
+                '<td style="height:4px;line-height:4px;font-size:0;background:linear-gradient(135deg,#2456a0 0%,#16325c 100%);">&nbsp;</td>' +
+              '</tr>' +
+              '<tr>' +
+                '<td style="padding:28px 28px 8px 28px;">' +
+                  '<p style="margin:0 0 6px 0;color:#c5daf8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;font-family:ui-monospace,Cascadia Mono,Consolas,monospace;">' +
+                    brand +
+                  '</p>' +
+                  '<h1 style="margin:0;color:#ffffff;font-size:22px;line-height:1.3;font-weight:700;">' +
+                    'New contact message' +
+                  '</h1>' +
+                  '<p style="margin:10px 0 0 0;color:rgba(255,255,255,0.62);font-size:14px;line-height:1.5;">' +
+                    'A project inquiry was submitted from your site.' +
+                  '</p>' +
+                '</td>' +
+              '</tr>' +
+              '<tr>' +
+                '<td style="padding:12px 28px 8px 28px;">' +
+                  '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;border-collapse:collapse;">' +
+                    rowHtml +
+                  '</table>' +
+                '</td>' +
+              '</tr>' +
+              '<tr>' +
+                '<td style="padding:20px 28px 28px 28px;border-top:1px solid rgba(255,255,255,0.12);">' +
+                  '<p style="margin:0;color:#9a9a9a;font-size:12px;line-height:1.5;">' +
+                    escapeHtml(meta) +
+                  '</p>' +
+                '</td>' +
+              '</tr>' +
+            '</table>' +
+          '</td>' +
+        '</tr>' +
+      '</table>' +
     '</div>'
   );
 }
@@ -274,7 +343,7 @@ async function handleContact(request, env) {
       replyTo: email,
       subject: 'Mesazh nga faqja: ' + name,
       text: textBody(rows, meta),
-      html: htmlBody(rows, meta)
+      html: htmlBody(rows, meta, site)
     });
     return json(200, { success: true }, cors);
   } catch (err) {
