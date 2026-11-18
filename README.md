@@ -21,6 +21,20 @@ Project: **`agodev`** (separate from `portfolio`). Leave `portfolio` alone.
 | Build command | *(empty)* |
 | Build output directory | **`/`** or **`.`** (not `public`) |
 
+### Scrape Shield: turn off Email Address Obfuscation
+
+AgoDev uses `<base href="https://agonmustafaj.com/">` so shared portfolio assets resolve correctly. Cloudflare Email Address Obfuscation rewrites `mailto:` links to relative `/cdn-cgi/l/email-protection` and injects `/cdn-cgi/scripts/.../email-decode.min.js`. With the base tag, crawlers follow those as `https://agonmustafaj.com/cdn-cgi/...`, which is GitHub Pages and returns 404.
+
+Do this in the Cloudflare dashboard (zone for `agonmustafaj.com` / `agodev.agonmustafaj.com`):
+
+1. Open [Cloudflare Dashboard](https://dash.cloudflare.com/) → select the **agonmustafaj.com** zone.
+2. Go to **Scrape Shield** (under **Security**, or search “Scrape Shield”).
+3. Set **Email Address Obfuscation** to **Off**.
+4. Purge cache for `https://agodev.agonmustafaj.com/` (Caching → Configuration → Custom Purge), or wait for the next deploy.
+5. Confirm the live HTML has no `/cdn-cgi/l/email-protection` links and no `email-decode.min.js` script.
+
+The page also builds the “Email me” mailto in JavaScript (no static `mailto:` in HTML) so crawlers stay clean even if the setting is turned back on.
+
 ### Production secrets (dashboard — not wrangler.toml)
 
 `wrangler.toml` must **not** define `[vars]` for these. If Cloudflare says a value is “managed by wrangler.toml”, remove it from the file, deploy/retry, then add again as **Secrets**.
