@@ -12,8 +12,55 @@
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Root-relative links (header, footer, project cards, assets) resolve to the main site; in-page links must be absolute. -->
-  <base href="https://agonmustafaj.com/">
+  <!--
+    Do not set <base href> to the portfolio origin. That conflicts with the
+    agodev canonical and led Google to prefer agonmustafaj.com over this host.
+    Shared chrome from portfolio JS still uses root-relative /paths; rewrite
+    those to the portfolio origin below so assets and nav keep working.
+  -->
+  <script>
+    (function () {
+      var PORTFOLIO = 'https://agonmustafaj.com';
+      function absolutize(value) {
+        if (!value) return value;
+        if (value.charAt(0) === '/' && value.charAt(1) !== '/') return PORTFOLIO + value;
+        return value;
+      }
+      function fixNode(node) {
+        if (!node || node.nodeType !== 1) return;
+        if (node.hasAttribute && node.hasAttribute('href')) {
+          var href = node.getAttribute('href');
+          var nextHref = absolutize(href);
+          if (nextHref !== href) node.setAttribute('href', nextHref);
+        }
+        if (node.hasAttribute && node.hasAttribute('src')) {
+          var src = node.getAttribute('src');
+          var nextSrc = absolutize(src);
+          if (nextSrc !== src) node.setAttribute('src', nextSrc);
+        }
+      }
+      function fixTree(root) {
+        if (!root) return;
+        fixNode(root);
+        if (!root.querySelectorAll) return;
+        var nodes = root.querySelectorAll('[href^="/"],[src^="/"]');
+        for (var i = 0; i < nodes.length; i++) fixNode(nodes[i]);
+      }
+      if (typeof MutationObserver === 'function') {
+        new MutationObserver(function (records) {
+          for (var i = 0; i < records.length; i++) {
+            var added = records[i].addedNodes;
+            for (var j = 0; j < added.length; j++) fixTree(added[j]);
+          }
+        }).observe(document.documentElement, { childList: true, subtree: true });
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () { fixTree(document); });
+      } else {
+        fixTree(document);
+      }
+    })();
+  </script>
   <title>AgoDev | SEO Services and Web Development</title>
   <meta name="description" content="AgoDev is the practice for SEO and web development: technical search work, business websites, a clear build process, and client projects already live.">
   <meta name="author" content="Agon Mustafaj">
@@ -320,9 +367,9 @@
           <div class="btn-group">
             <!--
               Avoid a static mail link in the HTML source. Cloudflare Email Address
-              Obfuscation rewrites those to /cdn-cgi/... and this page's base href
-              makes crawlers resolve them on GitHub Pages as 404s. Build the mail
-              link in JS instead; no-JS fallback is the in-page form.
+              Obfuscation rewrites those to /cdn-cgi/... which crawlers can treat as
+              broken site URLs. Build the mail link in JS instead; no-JS fallback is
+              the in-page form.
             -->
             <a
               href="https://agodev.agonmustafaj.com/#start"
