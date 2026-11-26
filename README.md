@@ -23,7 +23,7 @@ Project: **`agodev`** (separate from `portfolio`). Leave `portfolio` alone.
 
 ### Scrape Shield: turn off Email Address Obfuscation
 
-AgoDev uses `<base href="https://agonmustafaj.com/">` so shared portfolio assets resolve correctly. Cloudflare Email Address Obfuscation rewrites `mailto:` links to relative `/cdn-cgi/l/email-protection` and injects `/cdn-cgi/scripts/.../email-decode.min.js`. With the base tag, crawlers follow those as `https://agonmustafaj.com/cdn-cgi/...`, which is GitHub Pages and returns 404.
+AgoDev does **not** use `<base href>` (that conflicted with the subdomain canonical). An early script rewrites root-relative chrome links to `https://agonmustafaj.com/...` instead. Cloudflare Email Address Obfuscation can still rewrite `mailto:` links to relative `/cdn-cgi/l/email-protection` and inject `/cdn-cgi/scripts/.../email-decode.min.js`, which crawlers may treat as broken URLs.
 
 Do this in the Cloudflare dashboard (zone for `agonmustafaj.com` / `agodev.agonmustafaj.com`):
 
