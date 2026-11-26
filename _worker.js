@@ -360,6 +360,20 @@ async function handleContact(request, env) {
 }
 
 
+function withHtmlSeoHeaders(response, requestUrl) {
+  const contentType = response.headers.get('Content-Type') || '';
+  if (!contentType.includes('text/html')) return response;
+  const headers = new Headers(response.headers);
+  const canonical = new URL('/', requestUrl).origin + '/';
+  headers.set('Link', '<' + canonical + '>; rel="canonical"');
+  headers.set('Content-Signal', 'search=yes, ai-train=no');
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -371,6 +385,7 @@ export default {
     if (!assets || typeof assets.fetch !== 'function') {
       return new Response('ASSETS binding missing', { status: 500 });
     }
-    return assets.fetch(request);
+    const response = await assets.fetch(request);
+    return withHtmlSeoHeaders(response, url);
   }
 };
