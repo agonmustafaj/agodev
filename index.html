@@ -84,11 +84,17 @@
   <meta name="twitter:description" content="AgoDev is Agon Mustafaj's practice in Prishtina: technical SEO, custom business websites, a clear build process, and client projects already live.">
   <meta name="twitter:image" content="https://agonmustafaj.com/assets/images/banner.png?v=20261015og">
   <meta name="twitter:image:alt" content="AgoDev practice by Agon Mustafaj">
-  <link rel="icon" type="image/png" href="https://agonmustafaj.com/assets/images/favicon.png?v=20261017c">
-  <link rel="apple-touch-icon" href="https://agonmustafaj.com/assets/images/favicon.png?v=20261017c">
-  <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'))}catch(e){}</script>
+  <link rel="icon" type="image/png" href="https://agonmustafaj.com/assets/images/favicon.png?v=20261127p">
+  <link rel="apple-touch-icon" href="https://agonmustafaj.com/assets/images/apple-touch-icon.png?v=20261127p">
+  <script>try{document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
   <link rel="stylesheet" href="https://agonmustafaj.com/css/style.css?v=20261126a">
-  <link rel="stylesheet" href="https://agodev.agonmustafaj.com/css/contact-form.css?v=20261126a">
+  <link rel="stylesheet" href="https://agonmustafaj.com/css/home-redesign.css?v=20261127p">
+  <link rel="stylesheet" href="/css/agodev-redesign.css?v=20261127p">
+  <link rel="stylesheet" href="/css/contact-form.css?v=20261127p">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -179,7 +185,7 @@
   }
   </script>
 </head>
-<body data-page="agodev">
+<body data-page="agodev" class="site-redesign">
 
   <div id="site-header"></div>
 
@@ -408,10 +414,59 @@
       });
     })();
   </script>
-  <script src="https://agonmustafaj.com/js/data.js?v=20261126a" defer></script>
-  <script src="https://agonmustafaj.com/js/i18n.js?v=20261126a" defer></script>
-  <script src="https://agonmustafaj.com/js/script.js?v=20261126a" defer></script>
+  <script src="https://agonmustafaj.com/js/data.js?v=20261127p" defer></script>
+  <script src="https://agonmustafaj.com/js/i18n.js?v=20261127p" defer></script>
+  <script src="https://agonmustafaj.com/js/script.js?v=20261127p" defer></script>
+  <script defer>
+    (function () {
+      function ensureLogo() {
+        var nav = document.getElementById('hr-nav');
+        if (!nav) return;
+        var brand = nav.querySelector('.hr-nav-logo, .hr-wordmark');
+        if (!brand) return;
+        if (brand.classList.contains('hr-nav-logo') && brand.querySelector('img')) return;
+        var a = document.createElement('a');
+        a.href = 'https://agonmustafaj.com/';
+        a.className = 'hr-nav-logo';
+        a.setAttribute('aria-label', 'Agon Mustafaj Home');
+        a.innerHTML = '<img src="https://agonmustafaj.com/assets/images/logo-nav-dark.webp" alt="" width="277" height="60" decoding="async">';
+        brand.replaceWith(a);
+      }
+      function ensureBackTop() {
+        var btn = document.getElementById('hr-back-top');
+        if (!btn) {
+          btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'hr-back-top';
+          btn.id = 'hr-back-top';
+          btn.setAttribute('aria-label', 'Back to top');
+          btn.textContent = '↑';
+          document.body.appendChild(btn);
+        }
+        if (btn.getAttribute('data-hr-back-bound') === '1') return;
+        btn.setAttribute('data-hr-back-bound', '1');
+        btn.addEventListener('click', function () {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        function onScroll() {
+          btn.classList.toggle('is-visible', window.scrollY > 480);
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+      }
+      function boot() {
+        ensureLogo();
+        ensureBackTop();
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 0); });
+      } else {
+        setTimeout(boot, 0);
+      }
+      setTimeout(boot, 400);
+    })();
+  </script>
 </body>
 </html>
 
-<!-- pages-rebuild 20261126T180000Z -->
+<!-- pages-rebuild 20261127T192000Z -->
