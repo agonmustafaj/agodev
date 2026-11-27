@@ -28,6 +28,9 @@
       }
       function fixNode(node) {
         if (!node || node.nodeType !== 1) return;
+        // Keep AgoDev-hosted LINK assets (local CSS) on this origin. The
+        // rewriter is only for portfolio chrome paths injected as /...
+        if (node.tagName === 'LINK') return;
         if (node.hasAttribute && node.hasAttribute('href')) {
           var href = node.getAttribute('href');
           var nextHref = absolutize(href);
@@ -43,7 +46,7 @@
         if (!root) return;
         fixNode(root);
         if (!root.querySelectorAll) return;
-        var nodes = root.querySelectorAll('[href^="/"],[src^="/"]');
+        var nodes = root.querySelectorAll('a[href^="/"],img[src^="/"],script[src^="/"],source[src^="/"]');
         for (var i = 0; i < nodes.length; i++) fixNode(nodes[i]);
       }
       if (typeof MutationObserver === 'function') {
@@ -92,9 +95,9 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
   <link rel="stylesheet" href="https://agonmustafaj.com/css/style.css?v=20261126a">
-  <link rel="stylesheet" href="https://agonmustafaj.com/css/home-redesign.css?v=20261127p">
-  <link rel="stylesheet" href="/css/agodev-redesign.css?v=20261127p">
-  <link rel="stylesheet" href="/css/contact-form.css?v=20261127p">
+  <link rel="stylesheet" href="https://agonmustafaj.com/css/home-redesign.css?v=20261127q">
+  <link rel="stylesheet" href="https://agodev.agonmustafaj.com/css/agodev-redesign.css?v=20261127r">
+  <link rel="stylesheet" href="https://agodev.agonmustafaj.com/css/contact-form.css?v=20261127r">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -197,7 +200,7 @@
         <p data-i18n="agodev.lead">AgoDev is Agon Mustafaj's practice home in Prishtina for technical SEO, custom business websites, the build process, and client projects already live. This subdomain is the canonical page for that work.</p>
         <nav class="agodev-jumps" aria-label="AgoDev">
           <a href="https://agodev.agonmustafaj.com/#services" data-i18n="agodev.jumpServices">Services</a>
-          <a href="https://agodev.agonmustafaj.com/#work" data-i18n="agodev.jumpWork">Projects</a>
+          <a href="https://agodev.agonmustafaj.com/#projects" data-i18n="agodev.jumpWork">Projects</a>
           <a href="https://agodev.agonmustafaj.com/#process" data-i18n="agodev.jumpProcess">Process</a>
           <a href="https://agodev.agonmustafaj.com/#start" data-i18n="agodev.jumpStart">Start a project</a>
         </nav>
@@ -259,8 +262,8 @@
       </div>
     </section>
 
-    <section class="section" id="work" aria-labelledby="work-heading">
-      <div class="container">
+    <section class="section" id="projects" aria-labelledby="work-heading">
+      <div id="work" class="container">
         <div class="section-header reveal">
           <span class="label" data-i18n="agodev.workLabel">Client work</span>
           <h2 id="work-heading" data-i18n="agodev.workTitle">Projects</h2>
@@ -469,4 +472,4 @@
 </body>
 </html>
 
-<!-- pages-rebuild 20261127T192000Z -->
+<!-- pages-rebuild 20261127T195000Z -->

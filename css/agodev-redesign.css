@@ -57,6 +57,12 @@ body.site-redesign {
   line-height: 1.65;
 }
 
+body.site-redesign a.hr-btn-primary,
+body.site-redesign .hr-btn-primary {
+  color: #fff;
+  background: var(--hr-blue);
+}
+
 body.site-redesign #site-header {
   position: relative;
   z-index: 900;
@@ -69,6 +75,7 @@ body.site-redesign main {
 }
 
 body.site-redesign .page-header {
+  text-align: left;
   padding: clamp(3rem, 8vw, 5.5rem) 0 2.5rem;
   border-bottom: 1px solid var(--hr-border);
   background:
@@ -223,6 +230,14 @@ body.site-redesign .subtitle {
 
 body.site-redesign .company-link {
   color: var(--hr-cyan);
+}
+
+body.site-redesign #services,
+body.site-redesign #work,
+body.site-redesign #projects,
+body.site-redesign #process,
+body.site-redesign #start {
+  scroll-margin-top: calc(var(--hr-nav-h) + 1.25rem);
 }
 
 body.site-redesign .hr-nav-logo {
