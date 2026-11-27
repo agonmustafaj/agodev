@@ -1,0 +1,281 @@
+/* AgoDev visual match to portfolio redesign tokens.
+   Design/CSS only. Scoped via body.site-redesign. */
+
+body.site-redesign {
+  --hr-bg: #080B14;
+  --hr-bg-2: #101626;
+  --hr-surface: #151D30;
+  --hr-text: #F5F7FF;
+  --hr-text-2: #929DB3;
+  --hr-muted: #66738B;
+  --hr-blue: #5577FF;
+  --hr-violet: #9B6DFF;
+  --hr-cyan: #49D9FF;
+  --hr-border: #202B40;
+  --hr-glow: rgba(85, 119, 255, 0.20);
+  --hr-glow-v: rgba(155, 109, 255, 0.18);
+  --hr-success: #65D6A5;
+  --hr-gradient: linear-gradient(135deg, #5577FF 0%, #9B6DFF 50%, #49D9FF 100%);
+  --hr-font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --hr-font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --hr-nav-h: 72px;
+  --hr-container: 1180px;
+  --hr-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --bg-primary: var(--hr-bg);
+  --bg-secondary: var(--hr-bg-2);
+  --bg-tertiary: var(--hr-surface);
+  --bg-elevated: var(--hr-surface);
+  --bg-glass: color-mix(in srgb, var(--hr-blue) 8%, transparent);
+  --text-primary: var(--hr-text);
+  --text-secondary: var(--hr-text-2);
+  --text-muted: var(--hr-muted);
+  --accent-blue: var(--hr-blue);
+  --accent-text: var(--hr-cyan);
+  --accent-lime: var(--hr-cyan);
+  --accent-violet: var(--hr-violet);
+  --accent-gradient: var(--hr-gradient);
+  --border-color: var(--hr-border);
+  --border-hover: color-mix(in srgb, var(--hr-blue) 55%, var(--hr-border));
+  --glow-blue: var(--hr-glow);
+  --glow-violet: var(--hr-glow-v);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --font-sans: var(--hr-font-body);
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --nav-height: var(--hr-nav-h);
+  --container-max: var(--hr-container);
+
+  font-family: var(--hr-font-body);
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(85, 119, 255, 0.16), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 0%, rgba(155, 109, 255, 0.12), transparent 50%),
+    var(--hr-bg);
+  color: var(--hr-text);
+  line-height: 1.65;
+}
+
+body.site-redesign #site-header {
+  position: relative;
+  z-index: 900;
+  min-height: var(--hr-nav-h);
+}
+
+body.site-redesign main {
+  padding-top: var(--hr-nav-h);
+  min-height: 60vh;
+}
+
+body.site-redesign .page-header {
+  padding: clamp(3rem, 8vw, 5.5rem) 0 2.5rem;
+  border-bottom: 1px solid var(--hr-border);
+  background:
+    radial-gradient(ellipse 70% 80% at 80% 0%, rgba(85, 119, 255, 0.14), transparent 60%),
+    transparent;
+}
+
+body.site-redesign .page-header .label,
+body.site-redesign .section-header .label,
+body.site-redesign .label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--hr-font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hr-cyan);
+  margin-bottom: 0.85rem;
+}
+
+body.site-redesign .page-header h1,
+body.site-redesign .section-header h2,
+body.site-redesign h1,
+body.site-redesign h2,
+body.site-redesign h3 {
+  font-family: var(--hr-font-display);
+  letter-spacing: -0.03em;
+  color: var(--hr-text);
+}
+
+body.site-redesign .page-header h1,
+body.site-redesign .agodev-mark {
+  font-family: var(--hr-font-display);
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  max-width: none;
+}
+
+body.site-redesign .agodev-mark span {
+  background: var(--hr-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+body.site-redesign .page-header p,
+body.site-redesign .section-header p {
+  color: var(--hr-text-2);
+  max-width: 54ch;
+  font-size: 1.05rem;
+}
+
+body.site-redesign .container {
+  width: min(100% - 2.5rem, var(--hr-container));
+  margin-inline: auto;
+}
+
+body.site-redesign .section {
+  padding: clamp(3.5rem, 8vw, 5.5rem) 0;
+}
+
+body.site-redesign .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--hr-font-body);
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.85rem 1.35rem;
+  border: 1px solid transparent;
+  transition: transform 0.25s var(--hr-ease), background 0.25s, border-color 0.25s, color 0.25s, box-shadow 0.25s;
+}
+
+body.site-redesign .btn:hover {
+  transform: translateY(-1px);
+}
+
+body.site-redesign .btn-primary {
+  background: var(--hr-blue);
+  color: #fff;
+  border-color: transparent;
+}
+
+body.site-redesign .btn-primary:hover {
+  background: color-mix(in srgb, var(--hr-blue) 88%, white);
+  box-shadow: 0 10px 40px var(--hr-glow);
+  color: #fff;
+}
+
+body.site-redesign .btn-secondary,
+body.site-redesign .btn-ghost {
+  background: transparent;
+  color: var(--hr-text);
+  border-color: var(--hr-border);
+}
+
+body.site-redesign .btn-secondary:hover,
+body.site-redesign .btn-ghost:hover {
+  border-color: var(--hr-blue);
+  background: color-mix(in srgb, var(--hr-blue) 10%, transparent);
+  color: var(--hr-text);
+}
+
+body.site-redesign .what-i-do-card,
+body.site-redesign .services-process-step,
+body.site-redesign .contact-form--card,
+body.site-redesign .project-showcase,
+body.site-redesign .agodev-pointer {
+  background: var(--hr-surface);
+  border: 1px solid var(--hr-border);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
+body.site-redesign .agodev-jumps {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.75rem;
+}
+
+body.site-redesign .agodev-jumps a {
+  font-family: var(--hr-font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid var(--hr-border);
+  border-radius: 999px;
+  color: var(--hr-text-2);
+  background: transparent;
+}
+
+body.site-redesign .agodev-jumps a:hover {
+  color: var(--hr-text);
+  border-color: var(--hr-blue);
+  background: color-mix(in srgb, var(--hr-blue) 12%, transparent);
+}
+
+body.site-redesign .feature-list li,
+body.site-redesign .text-secondary,
+body.site-redesign .subtitle {
+  color: var(--hr-text-2);
+}
+
+body.site-redesign .company-link {
+  color: var(--hr-cyan);
+}
+
+body.site-redesign .hr-nav-logo {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+body.site-redesign .hr-nav-logo img {
+  height: 36px;
+  width: auto;
+  max-width: min(168px, 42vw);
+  display: block;
+}
+
+body.site-redesign .hr-back-top {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 880;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  background: var(--hr-bg);
+  border: 1.5px solid #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.25s var(--hr-ease), visibility 0.25s, transform 0.25s var(--hr-ease);
+}
+
+body.site-redesign .hr-back-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+@media (max-width: 720px) {
+  body.site-redesign .page-header h1,
+  body.site-redesign .agodev-mark {
+    max-width: none;
+  }
+}
