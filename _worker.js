@@ -135,90 +135,111 @@ function textBody(rows, meta) {
 }
 
 /**
- * Branded HTML for Resend. Colors match portfolio/AgoDev dark theme
- * (--bg-primary, --bg-elevated, --accent-blue, --accent-text, --text-muted).
- * Inline table layout for email clients. No em dashes in copy.
+ * Light transactional HTML for Resend. Table + inline CSS for email clients.
+ * No em dashes in copy.
  */
 function htmlBody(rows, meta, site) {
   const brand = escapeHtml(site || 'AgoDev');
   const font =
     "Segoe UI,system-ui,-apple-system,BlinkMacSystemFont,Helvetica Neue,Helvetica,Arial,sans-serif";
-  const rowHtml = rows
+  const detailRows = rows.filter((row) => row.label !== 'Message');
+  const messageRow = rows.find((row) => row.label === 'Message');
+
+  const detailHtml = detailRows
     .map((row, index) => {
       const border =
-        index === 0
-          ? ''
-          : 'border-top:1px solid rgba(255,255,255,0.12);';
+        index === 0 ? '' : 'border-top:1px solid #e8eaed;';
       let value;
       if (row.label === 'Email' && row.value) {
         value =
           '<a href="mailto:' +
           encodeURIComponent(row.value).replace(/%40/g, '@') +
-          '" style="color:#c5daf8;font-weight:600;text-decoration:none;">' +
+          '" style="color:#1a56a8;font-weight:600;text-decoration:none;">' +
           escapeHtml(row.value) +
           '</a>';
-      } else if (row.label === 'Message') {
+      } else if (row.label === 'Phone' && row.value) {
+        const tel = String(row.value).replace(/[^\d+]/g, '');
         value =
-          '<span style="color:#ffffff;font-weight:500;white-space:pre-wrap;">' +
+          '<a href="tel:' +
+          encodeURIComponent(tel) +
+          '" style="color:#1f2937;font-weight:600;text-decoration:none;">' +
           escapeHtml(row.value) +
-          '</span>';
+          '</a>';
       } else {
         value =
-          '<span style="color:#ffffff;font-weight:600;">' +
+          '<span style="color:#1f2937;font-weight:600;">' +
           escapeHtml(row.value) +
           '</span>';
       }
       return (
         '<tr>' +
-          '<td style="padding:14px 0;' +
+          '<td style="padding:12px 0;' +
           border +
-          'vertical-align:top;">' +
-            '<div style="color:#9a9a9a;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;line-height:1.4;margin:0 0 6px 0;font-family:ui-monospace,Cascadia Mono,Consolas,monospace;">' +
+          'vertical-align:top;width:38%;">' +
+            '<span style="color:#6b7280;font-size:13px;line-height:1.45;">' +
               escapeHtml(row.label) +
-            '</div>' +
-            '<div style="color:#ffffff;font-size:15px;line-height:1.55;">' +
+            '</span>' +
+          '</td>' +
+          '<td style="padding:12px 0;' +
+          border +
+          'vertical-align:top;width:62%;">' +
+            '<span style="color:#1f2937;font-size:15px;line-height:1.5;">' +
               value +
-            '</div>' +
+            '</span>' +
           '</td>' +
         '</tr>'
       );
     })
     .join('');
 
+  const messageHtml = messageRow
+    ? '<tr>' +
+        '<td style="padding:20px 28px 8px 28px;">' +
+          '<p style="margin:0 0 8px 0;color:#6b7280;font-size:13px;line-height:1.45;">' +
+            'Message' +
+          '</p>' +
+          '<p style="margin:0;color:#1f2937;font-size:15px;line-height:1.6;white-space:pre-wrap;">' +
+            escapeHtml(messageRow.value) +
+          '</p>' +
+        '</td>' +
+      '</tr>'
+    : '';
+
   return (
-    '<div style="margin:0;padding:0;background:#000000;">' +
-      '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#000000;margin:0;padding:0;width:100%;">' +
+    '<div style="margin:0;padding:0;background:#f3f4f6;">' +
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f3f4f6;margin:0;padding:0;width:100%;">' +
         '<tr>' +
-          '<td style="padding:28px 16px;font-family:' +
+          '<td style="padding:32px 16px;font-family:' +
           font +
           ';">' +
-            '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;margin:0 auto;background:#141414;border:1px solid rgba(255,255,255,0.16);">' +
+            '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;">' +
               '<tr>' +
-                '<td style="height:4px;line-height:4px;font-size:0;background:linear-gradient(135deg,#2456a0 0%,#16325c 100%);">&nbsp;</td>' +
+                '<td style="height:3px;line-height:3px;font-size:0;background:#1a56a8;">&nbsp;</td>' +
               '</tr>' +
               '<tr>' +
-                '<td style="padding:28px 28px 8px 28px;">' +
-                  '<p style="margin:0 0 6px 0;color:#c5daf8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;font-family:ui-monospace,Cascadia Mono,Consolas,monospace;">' +
+                '<td style="padding:28px 28px 20px 28px;">' +
+                  '<p style="margin:0 0 10px 0;color:#1a56a8;font-size:13px;font-weight:700;letter-spacing:0.02em;">' +
                     brand +
                   '</p>' +
-                  '<h1 style="margin:0;color:#ffffff;font-size:22px;line-height:1.3;font-weight:700;">' +
-                    'New contact message' +
+                  '<h1 style="margin:0;color:#111827;font-size:22px;line-height:1.3;font-weight:700;">' +
+                    'New inquiry' +
                   '</h1>' +
-                  '<p style="margin:10px 0 0 0;color:rgba(255,255,255,0.62);font-size:14px;line-height:1.5;">' +
-                    'A project inquiry was submitted from your site.' +
+                  '<p style="margin:8px 0 0 0;color:#6b7280;font-size:14px;line-height:1.5;">' +
+                    'A contact form submission from your site.' +
                   '</p>' +
                 '</td>' +
               '</tr>' +
               '<tr>' +
-                '<td style="padding:12px 28px 8px 28px;">' +
-                  '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;border-collapse:collapse;">' +
-                    rowHtml +
+                '<td style="padding:0 28px 8px 28px;">' +
+                  '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;border-collapse:collapse;border-top:1px solid #e8eaed;border-bottom:1px solid #e8eaed;">' +
+                    detailHtml +
                   '</table>' +
                 '</td>' +
               '</tr>' +
+              messageHtml +
               '<tr>' +
-                '<td style="padding:20px 28px 28px 28px;border-top:1px solid rgba(255,255,255,0.12);">' +
-                  '<p style="margin:0;color:#9a9a9a;font-size:12px;line-height:1.5;">' +
+                '<td style="padding:24px 28px 28px 28px;">' +
+                  '<p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.5;">' +
                     escapeHtml(meta) +
                   '</p>' +
                 '</td>' +
@@ -340,15 +361,15 @@ async function handleContact(request, env) {
   const site = SITE_NAMES[origin] || 'AgoDev';
   const rows = buildRows({ name, email, phone, projectType, budget, timeline, message });
   const pagePath = request.headers.get('Referer') || origin || 'https://agodev.agonmustafaj.com/';
-  const meta = 'Forma: Kontakt · Faqja: ' + site + ' · ' + pagePath;
+  const meta = 'Contact form · ' + site + ' · ' + pagePath;
 
   try {
     await sendWithResend(env, {
-      fromName: site + ' faqja',
+      fromName: site,
       fromAddress: contactFrom,
       to: contactTo,
       replyTo: email,
-      subject: 'Mesazh nga faqja: ' + name,
+      subject: 'New inquiry: ' + name,
       text: textBody(rows, meta),
       html: htmlBody(rows, meta, site)
     });
