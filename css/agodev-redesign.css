@@ -75,11 +75,11 @@ body.site-redesign main {
 }
 
 body.site-redesign .page-header {
-  text-align: left;
+  text-align: center;
   padding: clamp(3rem, 8vw, 5.5rem) 0 2.5rem;
   border-bottom: 1px solid var(--hr-border);
   background:
-    radial-gradient(ellipse 70% 80% at 80% 0%, rgba(85, 119, 255, 0.14), transparent 60%),
+    radial-gradient(ellipse 70% 80% at 50% 0%, rgba(85, 119, 255, 0.14), transparent 60%),
     transparent;
 }
 
@@ -116,6 +116,7 @@ body.site-redesign .agodev-mark {
   line-height: 1.05;
   letter-spacing: -0.04em;
   max-width: none;
+  margin-inline: auto;
 }
 
 body.site-redesign .agodev-mark span {
@@ -130,6 +131,10 @@ body.site-redesign .section-header p {
   color: var(--hr-text-2);
   max-width: 54ch;
   font-size: 1.05rem;
+}
+
+body.site-redesign .page-header p {
+  margin-inline: auto;
 }
 
 body.site-redesign .container {
@@ -197,7 +202,7 @@ body.site-redesign .agodev-pointer {
 
 body.site-redesign .agodev-jumps {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 0.65rem;
   margin-top: 1.75rem;
