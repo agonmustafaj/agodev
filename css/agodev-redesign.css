@@ -192,12 +192,236 @@ body.site-redesign .btn-ghost:hover {
 body.site-redesign .what-i-do-card,
 body.site-redesign .services-process-step,
 body.site-redesign .contact-form--card,
-body.site-redesign .project-showcase,
 body.site-redesign .agodev-pointer {
   background: var(--hr-surface);
   border: 1px solid var(--hr-border);
   border-radius: var(--radius-lg);
   box-shadow: none;
+}
+
+/* ---------- Projects grid (match portfolio homepage .hr-projects) ---------- */
+body.site-redesign #project-showcase {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+  margin-top: 0.35rem;
+}
+
+@media (min-width: 720px) {
+  body.site-redesign #project-showcase {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.35rem;
+  }
+}
+
+body.site-redesign #project-showcase .project-showcase {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 0;
+  align-items: stretch;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--hr-border);
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--hr-surface);
+  box-shadow: none;
+  direction: ltr;
+  transition: border-color 0.3s;
+}
+
+body.site-redesign #project-showcase .project-showcase:last-child {
+  border-bottom: 1px solid var(--hr-border);
+}
+
+body.site-redesign #project-showcase .project-showcase.reverse {
+  direction: ltr;
+}
+
+body.site-redesign #project-showcase .project-showcase.reverse > * {
+  direction: ltr;
+}
+
+body.site-redesign #project-showcase .project-showcase:hover {
+  border-color: color-mix(in srgb, var(--hr-blue) 45%, var(--hr-border));
+}
+
+/* Media: image plane like .hr-project-media (hide browser chrome) */
+body.site-redesign #project-showcase .browser-mockup {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  min-height: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--hr-bg-2);
+  cursor: pointer;
+  transform: none !important;
+  animation: none !important;
+  box-shadow: none !important;
+}
+
+body.site-redesign #project-showcase .browser-mockup:hover,
+body.site-redesign #project-showcase .browser-mockup.reveal.visible:hover,
+body.site-redesign #project-showcase .project-showcase.reverse .browser-mockup:hover {
+  animation: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+body.site-redesign #project-showcase .browser-toolbar,
+body.site-redesign #project-showcase .browser-cursor {
+  display: none !important;
+}
+
+body.site-redesign #project-showcase .browser-preview {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
+  overflow: hidden;
+  background: var(--hr-bg-2);
+}
+
+body.site-redesign #project-showcase .browser-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  transition: transform 0.7s var(--hr-ease);
+}
+
+body.site-redesign #project-showcase .project-showcase:hover .browser-preview img {
+  transform: scale(1.05);
+}
+
+body.site-redesign #project-showcase .browser-mockup::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(135deg, rgba(85, 119, 255, 0.18), rgba(155, 109, 255, 0.12), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+body.site-redesign #project-showcase .project-showcase:hover .browser-mockup::after {
+  opacity: 1;
+}
+
+/* Body copy rhythm like .hr-project-body */
+body.site-redesign #project-showcase .project-showcase > div:last-child {
+  padding: 1.15rem 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+body.site-redesign #project-showcase .project-number {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hr-muted);
+  margin-bottom: 0.45rem;
+}
+
+body.site-redesign #project-showcase .project-showcase h3 {
+  font-family: var(--hr-font-display);
+  font-size: clamp(1.1rem, 1.8vw, 1.35rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  margin: 0 0 0.5rem;
+  color: var(--hr-text);
+}
+
+body.site-redesign #project-showcase .project-showcase .text-secondary,
+body.site-redesign #project-showcase .project-showcase p {
+  color: var(--hr-text-2) !important;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0 0 0.85rem !important;
+  max-width: none;
+}
+
+body.site-redesign #project-showcase .project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 1rem;
+}
+
+body.site-redesign #project-showcase .project-tags .tag,
+body.site-redesign #project-showcase .tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--hr-text-2);
+  border: 1px solid var(--hr-border);
+  border-radius: 999px;
+  padding: 0.22rem 0.5rem;
+  background: transparent;
+}
+
+body.site-redesign #project-showcase .project-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+body.site-redesign #project-showcase .project-links .btn,
+body.site-redesign #project-showcase .project-links .btn-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 999px;
+  border-width: 1px;
+  border-style: solid;
+  text-decoration: none;
+  transform: none;
+}
+
+body.site-redesign #project-showcase .project-links .btn:hover {
+  transform: translateY(-1px);
+}
+
+body.site-redesign #project-showcase .project-links .btn-primary {
+  background: var(--hr-blue);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+body.site-redesign #project-showcase .project-links .btn-primary:hover {
+  background: color-mix(in srgb, var(--hr-blue) 88%, white);
+  box-shadow: 0 10px 40px var(--hr-glow);
+  color: #fff;
+}
+
+body.site-redesign #project-showcase .project-links .btn-secondary {
+  background: transparent;
+  color: var(--hr-text);
+  border-color: var(--hr-border);
+  box-shadow: none;
+}
+
+body.site-redesign #project-showcase .project-links .btn-secondary:hover {
+  border-color: var(--hr-blue);
+  background: color-mix(in srgb, var(--hr-blue) 10%, transparent);
+  color: var(--hr-text);
 }
 
 body.site-redesign .agodev-jumps {

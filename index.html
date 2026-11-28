@@ -119,7 +119,7 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
   <link rel="stylesheet" href="https://agonmustafaj.com/css/style.css?v=20261126a">
   <link rel="stylesheet" href="https://agonmustafaj.com/css/home-redesign.css?v=20261127q">
-  <link rel="stylesheet" href="https://agodev.agonmustafaj.com/css/agodev-redesign.css?v=20261128h1c">
+  <link rel="stylesheet" href="https://agodev.agonmustafaj.com/css/agodev-redesign.css?v=20261128proj">
   <link rel="stylesheet" href="https://agodev.agonmustafaj.com/css/contact-form.css?v=20261128logo">
   <script type="application/ld+json">
   {
@@ -508,9 +508,24 @@
         window.addEventListener('scroll', onScroll, { passive: true });
         onScroll();
       }
+      /* Case study + preview assets live on the portfolio host; rewrite relative paths. */
+      function fixProjectAssetHosts() {
+        var root = document.getElementById('project-showcase');
+        if (!root || !root.children.length) return false;
+        var host = 'https://agonmustafaj.com';
+        root.querySelectorAll('a[href^="/projects/"]').forEach(function (a) {
+          a.setAttribute('href', host + a.getAttribute('href'));
+        });
+        root.querySelectorAll('img[src^="/assets/"]').forEach(function (img) {
+          var next = host + img.getAttribute('src');
+          if (img.getAttribute('src') !== next) img.setAttribute('src', next);
+        });
+        return true;
+      }
       function boot() {
         ensureLogo();
         ensureBackTop();
+        fixProjectAssetHosts();
       }
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 0); });
@@ -518,9 +533,15 @@
         setTimeout(boot, 0);
       }
       setTimeout(boot, 400);
+      setTimeout(boot, 1200);
+      var tries = 0;
+      var poll = setInterval(function () {
+        tries += 1;
+        if (fixProjectAssetHosts() || tries > 20) clearInterval(poll);
+      }, 250);
     })();
   </script>
 </body>
 </html>
 
-<!-- pages-rebuild 20261128T110507Z -->
+<!-- pages-rebuild 20261128T142500Z -->
