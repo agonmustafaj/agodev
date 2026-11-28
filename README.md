@@ -73,7 +73,7 @@ If still false, the JSON `missing` array lists which secret names did not bind (
 ## Contact API
 
 - URL: `https://agodev.agonmustafaj.com/api/contact`
-- Subject: `Mesazh nga faqja: {name}`
+- Subject: `New inquiry: {name}` (From display name: site name, e.g. `AgoDev`)
 - Fields: project type, name, email, phone, optional budget/timeline, message, honeypot `botcheck`
 
 ## Optional: standalone Worker
