@@ -26,6 +26,20 @@
         if (value.charAt(0) === '/' && value.charAt(1) !== '/') return PORTFOLIO + value;
         return value;
       }
+      // Portfolio chrome injects PNG srcset as root-relative /assets/... URLs.
+      // Without rewriting each candidate, high-DPR browsers request them on
+      // agodev (404) and the nav logo looks broken/blurry/wrong.
+      function absolutizeSrcset(value) {
+        if (!value) return value;
+        return value.split(',').map(function (part) {
+          var trimmed = part.trim();
+          if (!trimmed) return trimmed;
+          var space = trimmed.search(/\s/);
+          var url = space === -1 ? trimmed : trimmed.slice(0, space);
+          var rest = space === -1 ? '' : trimmed.slice(space);
+          return absolutize(url) + rest;
+        }).join(', ');
+      }
       function fixNode(node) {
         if (!node || node.nodeType !== 1) return;
         // Keep AgoDev-hosted LINK assets (local CSS) on this origin. The
@@ -41,12 +55,17 @@
           var nextSrc = absolutize(src);
           if (nextSrc !== src) node.setAttribute('src', nextSrc);
         }
+        if (node.hasAttribute && node.hasAttribute('srcset')) {
+          var srcset = node.getAttribute('srcset');
+          var nextSrcset = absolutizeSrcset(srcset);
+          if (nextSrcset !== srcset) node.setAttribute('srcset', nextSrcset);
+        }
       }
       function fixTree(root) {
         if (!root) return;
         fixNode(root);
         if (!root.querySelectorAll) return;
-        var nodes = root.querySelectorAll('a[href^="/"],img[src^="/"],script[src^="/"],source[src^="/"]');
+        var nodes = root.querySelectorAll('a[href^="/"],img[src^="/"],img[srcset],script[src^="/"],source[src^="/"],source[srcset]');
         for (var i = 0; i < nodes.length; i++) fixNode(nodes[i]);
       }
       if (typeof MutationObserver === 'function') {
@@ -101,8 +120,8 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
   <link rel="stylesheet" href="https://agonmustafaj.com/css/style.css?v=20261126a">
   <link rel="stylesheet" href="https://agonmustafaj.com/css/home-redesign.css?v=20261127q">
-  <link rel="stylesheet" href="https://agodev.agonmustafaj.com/css/agodev-redesign.css?v=20261127r">
-  <link rel="stylesheet" href="https://agodev.agonmustafaj.com/css/contact-form.css?v=20261127r">
+  <link rel="stylesheet" href="https://agodev.agonmustafaj.com/css/agodev-redesign.css?v=20261128logo">
+  <link rel="stylesheet" href="https://agodev.agonmustafaj.com/css/contact-form.css?v=20261128logo">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -432,12 +451,40 @@
         if (!nav) return;
         var brand = nav.querySelector('.hr-nav-logo, .hr-wordmark');
         if (!brand) return;
-        if (brand.classList.contains('hr-nav-logo') && brand.querySelector('img')) return;
+        // Match portfolio crisp PNG nav logo (ASW-54): 168/336/536 denser PNGs, no WebP.
+        var logoSrc = 'https://agonmustafaj.com/assets/images/logo-nav-dark-168.png';
+        var logoSrcset =
+          'https://agonmustafaj.com/assets/images/logo-nav-dark-168.png 166w, ' +
+          'https://agonmustafaj.com/assets/images/logo-nav-dark-336.png 333w, ' +
+          'https://agonmustafaj.com/assets/images/logo-nav-dark-536.png 536w';
+        var logoSizes = '(max-width: 1099px) min(168px, 46vw), 168px';
+        var logoMarkup =
+          '<img src="' + logoSrc + '" srcset="' + logoSrcset + '" sizes="' + logoSizes +
+          '" alt="Agon Mustafaj" width="168" height="36" decoding="async">';
+        var img = brand.querySelector('img');
+        if (brand.classList.contains('hr-nav-logo') && img) {
+          var src = img.getAttribute('src') || '';
+          var srcset = img.getAttribute('srcset') || '';
+          var needsUpgrade =
+            src.indexOf('logo-nav-dark-168.png') === -1 ||
+            srcset.indexOf('logo-nav-dark-536.png') === -1 ||
+            srcset.indexOf('https://agonmustafaj.com/') === -1;
+          if (needsUpgrade) {
+            img.setAttribute('src', logoSrc);
+            img.setAttribute('srcset', logoSrcset);
+            img.setAttribute('sizes', logoSizes);
+            img.setAttribute('alt', 'Agon Mustafaj');
+            img.setAttribute('width', '168');
+            img.setAttribute('height', '36');
+            img.setAttribute('decoding', 'async');
+          }
+          return;
+        }
         var a = document.createElement('a');
         a.href = 'https://agonmustafaj.com/';
         a.className = 'hr-nav-logo';
         a.setAttribute('aria-label', 'Agon Mustafaj Home');
-        a.innerHTML = '<img src="https://agonmustafaj.com/assets/images/logo-nav-dark.webp" alt="" width="277" height="60" decoding="async">';
+        a.innerHTML = logoMarkup;
         brand.replaceWith(a);
       }
       function ensureBackTop() {
@@ -477,4 +524,4 @@
 </body>
 </html>
 
-<!-- pages-rebuild 20261127T195000Z -->
+<!-- pages-rebuild 20261128T110507Z -->
